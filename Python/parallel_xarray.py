@@ -38,10 +38,10 @@ result = xr.apply_ufunc(ufunc, xrData_chunked,
                         input_core_dims = [['b']],
                         dask="parallelized",
                        output_dtypes=[float],
-                       dask_gufunc_kwargs={'allow_rechunk':False,})
+                       dask_gufunc_kwargs={'allow_rechunk':False,}).compute()
 
 t2 = time.time() # End benchmark
 
 # Print result and benchmark
-print(result.compute())
+print(result)
 print("Time elapsed: %s" % (t2 - t1))
