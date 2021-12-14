@@ -5,9 +5,8 @@ import rpy2.robjects as robjects
 from array import array
 
 # Create example numpy and xarray data
-npData = np.random.rand(5,4,3)
-xrData = xr.DataArray(npData, dims = ['x', 'y', 'b'], coords = {'x': [1,2,3,4,5], 'y': [6,7,8,9], 'b': ['b1', 'b2', 'b3']})
-xrDataset = xrData.to_dataset(dim = 'b')
+npData = np.random.rand(100,100,3)
+xrData = xr.DataArray(npData, dims = ['x', 'y', 'b'], coords = {'b': ['b1', 'b2', 'b3']})
 
 # Read R Code
 file = open('./R/vectors.R', mode = 'r')
