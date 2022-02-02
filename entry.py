@@ -18,6 +18,6 @@ def run(process, udf, dimension = None, context = None):
     print(result)
     print("Time elapsed: %s" % (t2 - t1))
 
-run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
-
 run("apply", "./udfs/apply.R", context = -1)
+
+run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
