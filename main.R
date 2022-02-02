@@ -15,8 +15,14 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     dc = st_set_dimensions(dc, names = dimensions)
     for(i in 1:length(dimensions)) {
       name = dimensions[i]
-      if (name != "x" && name != "y") {
-        values = unlist(labels[i])
+      values = unlist(labels[i])
+      if (name == "x" || name == "y") {
+        dc = st_set_dimensions(dc, name, values = as.numeric(values))
+      }
+      else if (name == "t") {
+        dc = st_set_dimensions(dc, name, values = lubridate::as_datetime(values))
+      }
+      else {
         dc = st_set_dimensions(dc, name, values = values)
       }
     }
