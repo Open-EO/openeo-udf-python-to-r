@@ -1,25 +1,52 @@
 import xarray as xr
 import numpy as np
 import rpy2.robjects as robjects
+from rpy2.robjects import numpy2ri
 import requests
 
-NUM_CORES = 4
+numpy2ri.activate()
+
 CHUNK_LIMIT = 100
 
-def execute_udf(data, process, process_args, udf): # Only works for data which have spatial dimensions and no label support yet
-    rFunc = prepare_r_udf(udf)
+def execute_udf(process, udf, data, dimension = None, context = None):
+    # Prepare UDF code
+    udf_filename = prepare_udf(udf)
+    rFunc = compile_udf_executor()
 
-    if process == 'apply':
-        raise Exception("apply not supported yet")
-    elif process == 'reduce_dimension':
-        chunks = chunk_cube(data, process, dimension = process_args.get('dimension', None))
-        # func = lambda data, process, process_args, context: rFunc(process, process_args, {'data': data, 'context': process_args.get('context', None)})
-        func = lambda data, process, process_args: print(data, process, process_args)
-        return chunks.map_blocks(func = func, kwargs = {'process': process, 'process_args': process_args}).compute()
+    # Prepare data cube metadata
+    input_dims = list(data.dims)
+    output_dims = list(data.dims)
+    if dimension is not None:
+        output_dims.remove(dimension)
+    labels = get_labels(data)
+
+    kwargs = {'process': process, 'dimension': dimension, 'context': context, 'file': udf_filename, 'dimensions': list(data.dims),  'labels': labels}
+
+    def call_r(data, dimensions, labels, file, process, dimension, context):
+        if dimension is None and context is None:
+            vector = rFunc(data, dimensions, labels, file, process)
+        if context is None:
+            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension)
+        elif dimension is None:
+            vector = rFunc(data, dimensions, labels, file, process, context = context)
+        else:
+            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
+        return vector
+
+    if process == 'apply' or process == 'reduce_dimension':
+        return xr.apply_ufunc(call_r, data, input_core_dims = [input_dims], output_core_dims = [output_dims], kwargs = kwargs, vectorize = True, dask = "parallelized")
+        #chunks = chunk_cube(data, dimension = dimension)
+        #return chunks.map_blocks(call_r, data, kwargs = kwargs).compute()
     else:
-        raise Exception("Not supported yet")
+        raise Exception("Not implemented yet for Python")
 
-def chunk_cube(data, process, dimension = None):
+def get_labels(data):
+    labels = []
+    for k in data.coords:
+        labels.append(data.coords[k].data)
+    return labels
+
+def chunk_cube(data, dimension = None):
     # Determin chunk sizes
     chunks = dict(data.sizes)
     for k,v in chunks.items():
@@ -34,13 +61,13 @@ def unchunk_cube(data):
         
 def create_dummy_cube(dims, sizes):
     npData = np.random.rand(*sizes)
-    xrData = xr.DataArray(npData, dims = dims) #, coords = {'x': np.arange(npData.shape[0]), 'y': np.arange(npData.shape[1]), 'b': ['b1', 'b2', 'b3']})
+    xrData = xr.DataArray(npData, dims = dims, coords = {'x': np.arange(npData.shape[0]), 'y': np.arange(npData.shape[1]), 'b': ['b1', 'b2', 'b3']}) # todo
     return xrData
 
 def generate_filename():
     return "./udfs/temp.R"
 
-def prepare_r_udf(udf):
+def prepare_udf(udf):
     if isinstance(udf, str) == False :
         raise "Invalid UDF specified"
 
@@ -51,9 +78,7 @@ def prepare_r_udf(udf):
         
         return write_udf(r.content)
     elif "\n" in udf or "\r" in udf: # code
-        with open(filename, 'w') as f:
-            f.write(udf)
-            return filename
+        return write_udf(udf)
     else: # file path
         return udf
 
@@ -73,8 +98,8 @@ def write_udf(data):
         raise Exception("Can't write UDF file")
 
 # Compile R Code once
-def compile_udf():
-    file = open('./R/main.R', mode = 'r')
+def compile_udf_executor():
+    file = open('./main.R', mode = 'r')
     rCode = file.read()
     file.close()
 

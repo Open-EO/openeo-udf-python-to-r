@@ -1,10 +1,19 @@
-main = function(process, process_args, udf_args) {
-  source(opts$file)
-  if(process === 'reduce_dimension') {
-    for(asdasdasd)
-      result = udf(udf_args$data, udf_args$context)
+library(stars)
+
+main = function(data, dimensions, labels, file, process, dimension = NULL, context = NULL) {
+  source(file)
+  if(process == 'apply') {
+    result = udf(data, context)
+    return (result)
+  }
+  else if(process == 'reduce_dimension') {
+    dc = stars(data, labels = labels)
+    st_dimensions(data) <- dimensions
+    st_apply(data, dimension, function(x) { udf(x, context) })
+    df = as.data.frame(data)
+    return (df)
   }
   else {
-    # not implemented yet
+    stop("Not implemented yet for R");
   }
 }
