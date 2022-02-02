@@ -46,19 +46,6 @@ def get_labels(data):
         labels.append(data.coords[k].data)
     return labels
 
-def chunk_cube(data, dimension = None):
-    # Determin chunk sizes
-    chunks = dict(data.sizes)
-    for k,v in chunks.items():
-        if k != dimension and v > CHUNK_LIMIT:
-            chunks[k] = CHUNK_LIMIT
-
-    # Chunk data
-    return data.chunk(chunks = chunks)
-
-def unchunk_cube(data):
-    return xr.combine_by_coords(data_objects = data, compat = 'no_conflicts', data_vars = 'all', coords = 'different', join = 'outer', combine_attrs = 'no_conflicts', datasets = None)
-        
 def create_dummy_cube(dims, sizes):
     npData = np.random.rand(*sizes)
     xrData = xr.DataArray(npData, dims = dims, coords = {'x': np.arange(npData.shape[0]), 'y': np.arange(npData.shape[1]), 'b': ['b1', 'b2', 'b3']}) # todo

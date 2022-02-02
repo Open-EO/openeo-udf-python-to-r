@@ -5,11 +5,11 @@ import rpy2.robjects as robjects
 from array import array
 
 # Create example numpy and xarray data
-npData = np.random.rand(100,100,3)
+npData = np.random.rand(1000,1000,3)
 xrData = xr.DataArray(npData, dims = ['x', 'y', 'b'], coords = {'b': ['b1', 'b2', 'b3']})
 
 # Read R Code
-file = open('./R/vectors.R', mode = 'r')
+file = open('./old/R/vectors.R', mode = 'r')
 rCode = file.read()
 file.close()
 

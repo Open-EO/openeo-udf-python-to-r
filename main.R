@@ -10,11 +10,20 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     return (result)
   }
   else if(process == 'reduce_dimension') {
+    # create data cube in stars
     dc = st_as_stars(data)
     dc = st_set_dimensions(dc, names = dimensions)
-    # st_set_dimensions(x, "band", values = c(1,2,3,4,5,7), names = "band_number", point = TRUE))
+    for(i in 1:length(dimensions)) {
+      name = dimensions[i]
+      if (name != "x" && name != "y") {
+        values = unlist(labels[i])
+        dc = st_set_dimensions(dc, name, values = values)
+      }
+    }
+    # reduce data cube
     margin = dimensions[dimensions != dimension]
     dc = st_apply(dc, margin, function(x) { udf(x, context) })
+    # return data cube as array
     df = dc[[1]]
     return (df)
   }

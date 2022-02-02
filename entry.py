@@ -3,7 +3,7 @@ import time
 
 # Data Cube config
 dims = ['x', 'y', 'b']
-sizes = [100, 100, 3]
+sizes = [1000, 1000, 3]
 
 def run(process, udf, dimension = None, context = None):
     # Prepare data
@@ -21,3 +21,13 @@ def run(process, udf, dimension = None, context = None):
 run("apply", "./udfs/apply.R", context = -1)
 
 run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
+
+# Benchmark for 1000x1000x3:
+# apply: 1.5 sec
+# reduce_dimension: 11 sec
+# old variant for reduce_dimension: 233 sec
+#
+# Benchmark for 74000x1000x3:
+# apply: 31 sec
+# reduce_dimension: several minutes (tbc)
+# old variant for reduce_dimension: not tested
