@@ -3,7 +3,7 @@ import time
 
 # Data Cube config
 dims = ['x', 'y', 't', 'b']
-sizes = [100, 100, 10, 3]
+sizes = [7400, 1000, 10, 3]
 labels = {
     # x and y get generated automatically for now (todo: get from actual data)
     'x': None,
@@ -34,7 +34,7 @@ run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
 # reduce_dimension: 11 sec
 # old variant for reduce_dimension: 233 sec
 #
-# Benchmark for 74000x1000x3:
-# apply: 31 sec
+# Benchmark for 7400x1000x10x3:
+# apply: 30 sec
 # reduce_dimension: several minutes (tbc)
 # old variant for reduce_dimension: not tested
