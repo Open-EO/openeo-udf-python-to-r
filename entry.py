@@ -22,19 +22,20 @@ def run(process, udf, dimension = None, context = None):
     t2 = time.time() # End benchmark
 
     # Print result and benchmark
-    print(result)
     print("Time elapsed: %s" % (t2 - t1))
+    print(result)
 
+print("apply")
 run("apply", "./udfs/apply.R", context = -1)
 
+print("reduce_dimension")
 run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
 
-# Benchmark for 1000x1000x3:
+# Benchmark for 100x100x10x3:
 # apply: 1.5 sec
-# reduce_dimension: 11 sec
+# reduce_dimension: 0.3 sec
 # old variant for reduce_dimension: 233 sec
 #
 # Benchmark for 7400x1000x10x3:
-# apply: 30 sec
-# reduce_dimension: several minutes (tbc)
-# old variant for reduce_dimension: not tested
+# apply: ~ 20 sec
+# reduce_dimension: ~ 25 sec

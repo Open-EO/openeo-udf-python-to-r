@@ -28,7 +28,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     }
     # reduce data cube
     margin = dimensions[dimensions != dimension]
-    dc = st_apply(dc, margin, function(x) { udf(x, context) })
+    dc = st_apply(dc, margin, udf, context = context)
     # return data cube as array
     df = dc[[1]]
     return (df)
