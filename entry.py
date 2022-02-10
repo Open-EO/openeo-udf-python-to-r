@@ -39,6 +39,10 @@ run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
 # reduce_dimension: 0.3 sec
 # old variant for reduce_dimension: 233 sec
 #
-# Benchmark for 7400x1000x10x3:
+# Benchmark for 7400x1000x10x3 unparallelized:
 # apply: ~ 20 sec
 # reduce_dimension: ~ 25 sec
+#
+# Benchmark for 7400x1000x10x3 with 2 cores and a chunk size of 2000:
+# apply: ~ 12 sec
+# reduce_dimension: ~ 12 sec

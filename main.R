@@ -28,7 +28,11 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     }
     # reduce data cube
     margin = dimensions[dimensions != dimension]
-    dc = st_apply(dc, margin, udf, context = context)
+    prepare = function(x1, x2, ...) {
+      data = append(list(x1, x2), list(...))
+      return (udf(data, context))
+    }
+    dc = st_apply(dc, margin, prepare)
     # return data cube as array
     df = dc[[1]]
     return (df)

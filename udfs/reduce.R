@@ -1,8 +1,8 @@
 # This is the function that is passed to st_apply for reduction of a dimension
 
 # vectorized
-udf = function(a, b, c, context = NULL) {
-  pmax(a,b,c) * context
+udf = function(data, context = NULL) {
+  do.call(pmax, data) * context
 }
 
 # slow per pixel
