@@ -3,10 +3,11 @@ import numpy as np
 import rpy2.robjects as robjects
 from rpy2.robjects import numpy2ri
 import requests
+from joblib import Parallel, delayed
 
 numpy2ri.activate()
 
-def execute_udf(process, udf, data, dimension = None, context = None):
+def execute_udf(process, udf, data, dimension = None, context = None, parallelize = False, chunk_size = 1000, cores = 4):
     # Prepare UDF code
     udf_filename = prepare_udf(udf)
     rFunc = compile_udf_executor()
@@ -16,12 +17,9 @@ def execute_udf(process, udf, data, dimension = None, context = None):
     output_dims = list(data.dims)
     if dimension is not None:
         output_dims.remove(dimension)
-    labels = get_labels(data)
-
-    kwargs = {'process': process, 'dimension': dimension, 'context': context, 'file': udf_filename, 'dimensions': list(data.dims),  'labels': labels}
+    kwargs_default = {'process': process, 'dimension': dimension, 'context': context, 'file': udf_filename, 'dimensions': list(),  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
-        # print("r called")
         if dimension is None and context is None:
             vector = rFunc(data, dimensions, labels, file, process)
         if context is None:
@@ -33,15 +31,27 @@ def execute_udf(process, udf, data, dimension = None, context = None):
         return vector
 
     if process == 'apply' or process == 'reduce_dimension':
-        # todo: chunking/parallelization doesn't work
-        # data = chunk_cube(data, dimension = dimension, size = 500)
-        return xr.apply_ufunc(
-            call_r, data, kwargs = kwargs,
-            input_core_dims = [input_dims], output_core_dims = [output_dims],
-            vectorize = True,
-            dask = "parallelized"#, dask_gufunc_kwargs = {'allow_rechunk': True}
-            # exclude_dims could be useful for apply_dimension?
-        )
+        def runnable(data): 
+            kwargs = kwargs_default.copy()
+            kwargs['dimensions'] = list(data.dims)
+            kwargs['labels'] = get_labels(data)
+            return xr.apply_ufunc(
+                call_r, data, kwargs = kwargs,
+                input_core_dims = [input_dims], output_core_dims = [output_dims],
+                vectorize = True
+                # exclude_dims could be useful for apply_dimension?
+            )
+
+        if parallelize:
+            # Chunk data
+            chunks = chunk_cube(data, dimension = dimension, size = chunk_size)
+            # Execute in parallel
+            chunks = list(Parallel(n_jobs = cores, mmap_mode = None, backend = "threading", require = "sharedmem")(delayed(runnable)(chunk) for chunk in chunks))
+            # Combine data again
+            return combine_cubes(chunks)
+        else:
+            # Don't parallelize
+            return runnable(data)
     else:
         raise Exception("Not implemented yet for Python")
 
@@ -60,15 +70,36 @@ def create_dummy_cube(dims, sizes, labels):
     xrData = xr.DataArray(npData, dims = dims, coords = labels)
     return xrData
 
-def chunk_cube(data, dimension = None, size = 1000):
-    # Determin chunk sizes
-    chunks = dict(data.sizes)
-    for k,v in chunks.items():
-        if k != dimension and v > size:
-            chunks[k] = size
+def combine_cubes(data):
+    return xr.combine_by_coords(
+        data_objects = data,
+        compat = 'no_conflicts',
+        data_vars = 'all',
+        coords = 'different',
+        join = 'outer',
+        combine_attrs = 'no_conflicts',
+        datasets = None)
 
-    # Chunk data
-    return data.chunk(chunks = chunks)
+def chunk_cube(data, dimension = None, size = 1000):
+    # todo: generalize to work on all dimensions except the one given in `dimension`
+    chunks = []
+    data_size = dict(data.sizes)
+    num_chunks_x = int(np.ceil(data_size['x']/size))
+    num_chunks_y = int(np.ceil(data_size['y']/size))
+    for i in range(num_chunks_x):
+        x1 = i * size
+        x2 = min(x1 + size, data_size['x']) - 1
+        for j in range(num_chunks_y):
+            y1 = j * size
+            y2 = min(y1 + size, data_size['y']) - 1
+            chunk = data.loc[dict(
+                x = slice(data.x[x1], data.x[x2]),
+                y = slice(data.y[y1], data.y[y2])
+            )]
+            chunks.append(chunk)
+
+
+    return chunks
 
 def generate_filename():
     return "./udfs/temp.R" # todo
