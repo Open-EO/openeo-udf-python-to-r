@@ -3,7 +3,9 @@ import numpy as np
 import rpy2.robjects as robjects
 from rpy2.robjects import numpy2ri
 import requests
-from joblib import Parallel, delayed
+import dask
+from dask import delayed as dask_delayed
+#from joblib import Parallel, delayed
 
 numpy2ri.activate()
 
@@ -46,7 +48,11 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
             # Chunk data
             chunks = chunk_cube(data, dimension = dimension, size = chunk_size)
             # Execute in parallel
-            chunks = list(Parallel(n_jobs = cores, mmap_mode = None, backend = "threading", require = "sharedmem")(delayed(runnable)(chunk) for chunk in chunks))
+            dask_calls_list = []
+            for chunk in chunks:
+                dask_calls_list.append(dask_delayed(runnable)(chunk))
+            chunks = dask.compute(*dask_calls_list)
+#           chunks = list(Parallel(n_jobs = cores, mmap_mode = None, backend = "threading", require = "sharedmem")(delayed(runnable)(chunk) for chunk in chunks))
             # Combine data again
             return combine_cubes(chunks)
         else:
