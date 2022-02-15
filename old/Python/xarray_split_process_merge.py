@@ -2,6 +2,8 @@ from udf_lib import execute_udf, create_dummy_cube
 import time
 import numpy as np
 from joblib import Parallel, delayed
+import dask
+from dask import delayed as dask_delayed
 import xarray as xr
 
 # Data Cube config
@@ -45,3 +47,15 @@ result0 = xr.combine_by_coords(data_objects=results_list, compat='no_conflicts',
 result1 = data.mean(dim='b')
 
 print((result0 == result1).all())
+
+# Dask parallel processing
+
+dask_calls_list = []
+for chunk in chunks_list:
+    dask_calls_list.append(dask_delayed(chunked_data_processing)(chunk))
+    
+results_list_dask = dask.compute(*dask_calls_list)
+
+result2 = xr.combine_by_coords(data_objects=results_list_dask, compat='no_conflicts', data_vars='all', coords='different', join='outer', combine_attrs='no_conflicts', datasets=None)
+
+print((result2 == result1).all())
