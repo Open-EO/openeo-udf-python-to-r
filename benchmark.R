@@ -1,4 +1,4 @@
-source("./main.R")
+source("./executor.R")
 
 dims = c('x', 'y', 't', 'b')
 sizes = c(7400, 1000, 10, 3)
