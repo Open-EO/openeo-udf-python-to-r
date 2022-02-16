@@ -8,7 +8,7 @@ from dask import delayed as dask_delayed
 
 numpy2ri.activate()
 
-def execute_udf(process, udf, data, dimension = None, context = None, parallelize = False, chunk_size = 1000, cores = 4):
+def execute_udf(process, udf, data, dimension = None, context = None, parallelize = False, chunk_size = 1000):
     # Prepare UDF code
     udf_filename = prepare_udf(udf)
     rFunc = compile_udf_executor()

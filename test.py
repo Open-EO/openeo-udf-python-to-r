@@ -13,7 +13,6 @@ labels = {
 }
 parallelize = True
 chunk_size = 2000
-cores = 2
 
 def run(process, udf, dimension = None, context = None):
     # Prepare data
@@ -21,7 +20,7 @@ def run(process, udf, dimension = None, context = None):
 
     # Run UDF executor
     t1 = time.time() # Start benchmark
-    result = execute_udf(process, udf, data, dimension = dimension, context = context, parallelize = parallelize, chunk_size = chunk_size, cores = cores)
+    result = execute_udf(process, udf, data, dimension = dimension, context = context, parallelize = parallelize, chunk_size = chunk_size)
     t2 = time.time() # End benchmark
 
     # Print result and benchmark
@@ -43,6 +42,6 @@ run("reduce_dimension", "./udfs/reduce.R", dimension = 'b', context = -1)
 # apply: ~ 20 sec
 # reduce_dimension: ~ 25 sec
 #
-# Benchmark for 7400x1000x10x3 with 2 cores and a chunk size of 2000:
+# Benchmark for 7400x1000x10x3 and a chunk size of 2000:
 # apply: ~ 12 sec
 # reduce_dimension: ~ 12 sec
