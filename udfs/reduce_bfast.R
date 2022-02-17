@@ -1,3 +1,5 @@
+# library(bfast)
+
 udf = function(pixels, dates, start_monitor = 2018, level = c(0.05, 0.05), val = "breakpoint", context = NULL) {
   # create ts object for bfast
   lsts = bfastts(pixels, dates, type = c("irregular"))
