@@ -1,4 +1,4 @@
-name: test_env
+name: python-to-r-udf
 channels:
 - conda-forge
 dependencies:

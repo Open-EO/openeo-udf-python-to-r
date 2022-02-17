@@ -1,5 +1,4 @@
-# Receives a multi-dimensional matrix(?) and you can run vectorized functions on a per pixel basis
-# todo: could be a stars object in the future...
+# Receives a multi-dimensional stars object and you can run vectorized functions on a per pixel basis
 udf = function(x, context = NULL) {
   abs(x) * context
 }
