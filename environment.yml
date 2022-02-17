@@ -10,3 +10,4 @@ dependencies:
 - rioxarray
 - pip
 - rpy2
+- json
