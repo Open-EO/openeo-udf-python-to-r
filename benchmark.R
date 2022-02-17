@@ -1,4 +1,4 @@
-source("./executor.R")
+source('./executor.R')
 
 dims = c('x', 'y', 't', 'b')
 sizes = c(7400, 1000, 10, 3)
@@ -13,6 +13,6 @@ labels = list(
 
 start_time <- Sys.time()
 
-main(data, dims, labels, "./udfs/reduce.R", process = "reduce_dimension", dimension = 'b', context = -1)
+main(data, dims, labels, './udfs/reduce.R', process = 'reduce_dimension', dimension = 'b', context = -1)
 
 print(Sys.time() - start_time)

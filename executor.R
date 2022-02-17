@@ -24,7 +24,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
 
   if(process == 'apply') {
     # apply on each pixel
-    udf(dc, context)
+    dc = udf(dc, context)
   }
   else if(process == 'reduce_dimension') {
     # reduce data cube
