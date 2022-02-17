@@ -1,11 +1,15 @@
-# library(bfast)
+udf = function(data, context = NULL) {
+  pixels = unlist(data)
+  dates = names(data)
+  start_monitor = if(is.null(context) || is.null(context$start_monitor)) 2018 else context$start_monitor
+  val = if(is.null(context) || is.null(context$val)) "breakpoint" else context$val
+  level = if(is.null(context) || is.null(context$level) || length(context$val) == 0) c(0.05, 0.05) else context$level
 
-udf = function(pixels, dates, start_monitor = 2018, level = c(0.05, 0.05), val = "breakpoint", context = NULL) {
   # create ts object for bfast
-  lsts = bfastts(pixels, dates, type = c("irregular"))
+  lsts = bfast::bfastts(pixels, dates, type = c("irregular"))
  
   # run bfast
-  res = bfastmonitor(lsts, 
+  res = bfast::bfastmonitor(lsts, 
                      start_monitor, 
                      formula = response~harmon, 
                      order = 1, 

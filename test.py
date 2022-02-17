@@ -3,7 +3,7 @@ import time
 
 # Data Cube config
 dims = ['x', 'y', 't', 'b']
-sizes = [7400, 1000, 10, 3]
+sizes = [10, 10, 10, 3]
 labels = {
     # x and y get generated automatically for now (todo: get from actual data)
     'x': None,
@@ -25,7 +25,11 @@ def run(process, udf, dimension = None, context = None):
 
     # Print result and benchmark
     print("  Time elapsed: %s" % (t2 - t1))
-    #print(result)
+    print(result)
+
+
+print("reduce_dimension bfast")
+run("reduce_dimension", "./udfs/reduce_bfast.R", dimension = 't')
 
 print("apply")
 run("apply", "./udfs/apply.R", context = -1)
