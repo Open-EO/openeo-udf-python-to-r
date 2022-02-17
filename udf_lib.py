@@ -5,6 +5,7 @@ from rpy2.robjects import numpy2ri
 import requests
 import dask
 from dask import delayed as dask_delayed
+import json
 
 numpy2ri.activate()
 
@@ -26,9 +27,9 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
         if context is None:
             vector = rFunc(data, dimensions, labels, file, process, dimension = dimension)
         elif dimension is None:
-            vector = rFunc(data, dimensions, labels, file, process, context = context)
+            vector = rFunc(data, dimensions, labels, file, process, context = json.dumps(context))
         else:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
+            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = json.dumps(context))
         return vector
 
     if process == 'apply' or process == 'reduce_dimension':

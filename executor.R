@@ -2,6 +2,7 @@ suppressWarnings(suppressMessages(library("stars", quietly = T)))
 
 main = function(data, dimensions, labels, file, process, dimension = NULL, context = NULL) {
   dimensions = unlist(dimensions)
+  context = if (is.null(context)) context else jsonlite::fromJSON(context)
   dim_labels = NULL
 
   source(file)
