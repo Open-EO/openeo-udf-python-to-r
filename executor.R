@@ -21,14 +21,14 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     else {
       dc = st_set_dimensions(dc, name, values = values)
     }
-    if (name == dimension) {
+    if (!is.null(dimension) && name == dimension) {
       dim_labels = values
     }
   }
 
   if(process == 'apply') {
     # apply on each pixel
-    udf(dc, context)
+    dc = udf(dc, context)
   }
   else if(process == 'reduce_dimension') {
     # reduce data cube
