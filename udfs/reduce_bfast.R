@@ -1,19 +1,19 @@
-spatial_bfm = function(pixels, dates, start_monitor = 2018, level = c(0.05, 0.05), val = "breakpoint") {
+udf = function(pixels, dates, start_monitor = 2018, level = c(0.05, 0.05), val = "breakpoint", context = NULL) {
   # create ts object for bfast
   lsts = bfastts(pixels, dates, type = c("irregular"))
  
   # run bfast
   res = bfastmonitor(lsts, 
-               start_monitor, 
-               formula = response~harmon, 
-               order = 1, 
-               history = "all", 
-               level = level,
-               verbose = F)[[val]]
+                     start_monitor, 
+                     formula = response~harmon, 
+                     order = 1, 
+                     history = "all", 
+                     level = level,
+                     verbose = F)[[val]]
   if(is.na(res)){
     return(0)
   }
-  return(res)
+  return(res * context) 
 }
 
 
