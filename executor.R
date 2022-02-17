@@ -2,6 +2,7 @@ suppressWarnings(suppressMessages(library("stars", quietly = T)))
 
 main = function(data, dimensions, labels, file, process, dimension = NULL, context = NULL) {
   dimensions = unlist(dimensions)
+  dim_labels = NULL
 
   source(file)
 
@@ -20,6 +21,9 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     else {
       dc = st_set_dimensions(dc, name, values = values)
     }
+    if (name == dimension) {
+      dim_labels = values
+    }
   }
 
   if(process == 'apply') {
@@ -31,6 +35,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     margin = dimensions[dimensions != dimension]
     prepare = function(x1, x2, ...) {
       data = append(list(x1, x2), list(...))
+      names(data) = dim_labels
       return (udf(data, context))
     }
     dc = st_apply(dc, margin, prepare)
