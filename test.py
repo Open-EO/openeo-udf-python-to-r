@@ -25,7 +25,7 @@ def run(process, udf, dimension = None, context = None):
 
     # Print result and benchmark
     print('  Time elapsed: %s' % (t2 - t1))
-    print(result)
+    #print(result)
 
 
 print('apply')
