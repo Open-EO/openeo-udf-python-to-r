@@ -3,11 +3,18 @@ channels:
 - conda-forge
 dependencies:
 - python=3.7
+- r-base
+- libgdal
+- gdal
+- geos
+- proj
+- pip
 - dask
 - distributed
+- requests
 - numpy
 - xarray
-- rioxarray
-- pip
 - rpy2
-- json
+- r-stars
+- r-lubridate
+- r-jsonlite
