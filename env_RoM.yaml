@@ -1,0 +1,19 @@
+name: udf_env
+channels:
+- conda-forge
+dependencies:
+- python=3.10
+- r-base
+- libgdal
+- gdal
+- geos
+- proj
+- pip
+- dask
+- distributed
+- requests
+- numpy
+- xarray
+- rpy2
+- r-stars
+- r-lubridate
