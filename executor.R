@@ -34,12 +34,27 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
   else if(process == 'reduce_dimension') {
     # reduce data cube
     margin = dimensions[dimensions != dimension]
-    prepare = function(x1, x2, ...) {
-      data = append(list(x1, x2), list(...))
-      names(data) = dim_labels
-      return (udf(data, context))
+    if (exists("udf_chunked")) {
+      if (exists("udf_setup")) {
+        udf_setup(context)
+      }
+      prepare = function(data) {
+        names(data) = dim_labels
+        return (udf_chunked(data, context))
+      }
+      dc = st_apply(dc, margin, prepare)
+      if (exists("udf_teardown")) {
+        udf_teardown(context)
+      }
     }
-    dc = st_apply(dc, margin, prepare)
+    else {
+      prepare = function(x1, x2, ...) {
+        data = append(list(x1, x2), list(...))
+        names(data) = dim_labels
+        return (udf(data, context))
+      }
+      dc = st_apply(dc, margin, prepare)
+    }
   }
   else {
     stop("Not implemented yet for R");

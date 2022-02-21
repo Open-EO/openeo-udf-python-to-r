@@ -1,4 +1,4 @@
-udf = function(data, context = NULL) {
+udf_chunked = function(data, context = NULL) {
   pixels = unlist(data) # this are 150000 pixels right now. why? Should be 500
   dates = names(data)
 
@@ -28,9 +28,13 @@ udf = function(data, context = NULL) {
   if(is.na(res)){
     return(0)
   }
-  return(res * context) 
+  return(res) 
 }
 
+udf_setup = function(context) {
+  print("setup");
+}
 
-# unnecessary stuff removed from fun
-  #error handling
+udf_teardown = function(context) {
+  print("teardown");
+}
