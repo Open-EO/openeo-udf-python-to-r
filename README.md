@@ -29,7 +29,10 @@ You **can't** add or remove labels or dimensions.
 The UDF function must be named `udf` and receives two parameters:
 
 - `x` is a multi-dimensional stars object and you can run vectorized functions on a per pixel basis, e.g. `abs`.
-- `context` passes through the data that has been passed to the `context` parameter of the `apply` process. If nothing has been provided explicitly, the parameter is set to `NULL`.
+- `context` passes through the data that has been passed to the `context` parameter of the parent process (here: `apply`). If nothing has been provided explicitly, the parameter is set to `NULL`.
+  
+  This can be used to pass through configurable options, parameters or some additional data.
+  For example, if you would execute `apply(process = run_udf(...), context = list(m = -1, max = -100))` then you could access the corresponding values in the UDF below as `context$m` and `context$max` (see example below).
 
 The UDF must return a stars object with exactly the same shape.
 
@@ -37,7 +40,7 @@ The UDF must return a stars object with exactly the same shape.
 
 ```r
 udf = function(x, context) {
-  abs(x)
+  max(abs(x) * context$a, context$max)
 }
 ```
 
@@ -56,7 +59,7 @@ The vectorized variant is usually the more efficient variant as it's executed on
 The UDF function must be named `udf` and receives two parameters:
 
 - `data` is a list of lists of values that you can run vectorized functions on a per pixel basis, e.g. `pmax`.
-- `context` passes through the data that has been passed to the `context` parameter of the `reduce_dimension` process. If nothing has been provided explicitly, the parameter is set to `NULL`.
+- `context` -> see the description of `context` for `apply`.
 
 The UDF must return a list of values.
 
@@ -85,7 +88,7 @@ This variant is usually slower, but might be required for certain use cases. It 
 The UDF function must be named `udf_chunked` and receives two parameters:
 
 - `data` is a list of values, e.g. a single time series which you could pass to `max` or `mean`.
-- `context` passes through the data that has been passed to the `context` parameter of the `reduce_dimension` process. If nothing has been provided explicitly, the parameter is set to `NULL`.
+- `context` -> see the description of `context` for `apply`.
 
 The UDF must return a single value.
 
@@ -109,13 +112,18 @@ The input data may look like this if you reduce along a band dimension with thre
 
 As `udf_chunked` is usually executed many times in a row, you can optionally define two additional functions that are executed once before and once after the execution.
 These functions must be named `udf_setup` and `udf_teardown` and be placed in the same file as `udf_chunked`.
-They receive the `context` parameter explained above.
+`udf_setup` could be useful to initially load some data, e.g. a machine learning (ML) model.
+`udf_teardown` could be used to clean-up stuff that has been opened in `udf_setup`.
+
+Both functions receive a single parameter, which is the `context` parameter explained above.
+Here the context parameter could contain the path to a ML model file, for example.
+By using the context parameter, you can avoid hard-coding information, which helps to make UDFs reusable.
 
 **Example:**
 
 ```r
 udf_setup = function(context) {
-  print("setup");
+  # e.g. load a ML model from a file
 }
 
 udf_chunked = function(data, context) {
@@ -123,7 +131,7 @@ udf_chunked = function(data, context) {
 }
 
 udf_teardown = function(context) {
-  print("teardown");
+  # e.g. clean-up tasks
 }
 ```
 
