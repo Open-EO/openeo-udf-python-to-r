@@ -1,4 +1,4 @@
-udf_chunked = function(data, context = NULL) {
+udf_chunked = function(data, context) {
   pixels = unlist(data) # this are 150000 pixels right now. why? Should be 500
   dates = names(data)
 

@@ -14,10 +14,10 @@ labels = {
 parallelize = True
 chunk_size = 2000
 
-def run(process, udf, dimension = None, context = None):
-    # Prepare data
-    data = create_dummy_cube(dims, sizes, labels)
+# Prepare data
+data = create_dummy_cube(dims, sizes, labels)
 
+def run(process, udf, dimension = None, context = None):
     # Run UDF executor
     t1 = time.time() # Start benchmark
     result = execute_udf(process, udf, data, dimension = dimension, context = context, parallelize = parallelize, chunk_size = chunk_size)
@@ -25,13 +25,16 @@ def run(process, udf, dimension = None, context = None):
 
     # Print result and benchmark
     print('  Time elapsed: %s' % (t2 - t1))
-    #print(result)
+    # print(result)
 
 print('apply')
 run('apply', './udfs/apply.R', context = -1)
 
-print('reduce_dimension')
+print('reduce_dimension vectorized')
 run('reduce_dimension', './udfs/reduce.R', dimension = 'b', context = -1)
+
+# print('reduce_dimension chunked')
+# run('reduce_dimension', './udfs/reduce_slow.R', dimension = 'b', context = -1)
 
 # Benchmark for 100x100x10x3:
 # apply: 1.5 sec
