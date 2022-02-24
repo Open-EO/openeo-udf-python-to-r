@@ -104,8 +104,8 @@ udf_chunked = function(data, context) {
 
 The input data may look like this if you reduce along a band dimension with three bands `r`, `g` and `b`:
 
-- `data` could be `[1,2,3]`
-- `names(data)` would be `[r,g,b]`
+- `data` could be `c(1, 2, 3)`
+- `names(data)` would be `c("r", "g", "b")`
 - Exeucting the example above would return `3`
 
 ##### Setup and Teardown
