@@ -77,9 +77,9 @@ udf = function(data, context) {
 
 The input data may look like this if you reduce along a band dimension with three bands `r`, `g` and `b`:
 
-- `data` could be `[[1,2,3], [4,5,6], [3,2,1]]`
-- `names(data)` would be `[r,g,b]`
-- Exeucting the example above would return `[3,6,3]`
+- `data` could be `list(r = c(1, 2, 6), g = c(3, 4, 5), b = c(7, 1, 0))`
+- `names(data)` would be `c("r", "g", "b")`
+- Exeucting the example above would return `c(7, 4, 6)`
 
 #### per chunk
 
