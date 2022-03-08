@@ -78,7 +78,7 @@ def create_dummy_cube(dims, sizes, labels):
 def save_result(data, file):
     return data.to_netcdf(file)
 
-def load_cube(file):
+def load_data(file):
     data = xr.open_dataarray(file)
     data.load()
     data.close()
