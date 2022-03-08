@@ -1,14 +1,20 @@
-from udf_lib import execute_udf, load_data, save_result
+from udf_lib import execute_udf, save_result
 import time
+import xarray as xr
 
 # Config
 parallelize = True
 chunk_size = 2000
-load_file = ""
-save_file = ""
+load_file = "r4openeo_uc2_ndvi_mskd.nc"
+save_file = "result.nc"
 
 # Prepare data
-data = load_data(load_file)
+dataset = xr.load_dataset(load_file)
+dataset = dataset.drop('crs')
+data = dataset.to_array(dim = 'var')
+data = data.squeeze('var')
+data = data.drop('var')
+data['t'] = data.t.astype('str')
 
 def run(process, udf, dimension = None, context = None):
     # Run UDF executor

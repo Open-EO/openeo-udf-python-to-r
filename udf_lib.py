@@ -78,12 +78,6 @@ def create_dummy_cube(dims, sizes, labels):
 def save_result(data, file):
     return data.to_netcdf(file)
 
-def load_data(file):
-    data = xr.open_dataarray(file)
-    data.load()
-    data.close()
-    return data
-
 def combine_cubes(data):
     return xr.combine_by_coords(
         data_objects = data,

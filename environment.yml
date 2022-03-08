@@ -18,5 +18,5 @@ dependencies:
 - r-stars
 - r-lubridate
 - r-jsonlite
-- netcdf4
+- netCDF4
 - h5netcdf
