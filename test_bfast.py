@@ -33,4 +33,4 @@ def run(process, udf, dimension = None, context = None):
 
 
 print('reduce_dimension bfast')
-run('reduce_dimension', './udfs/reduce_bfast.R', dimension = 't', context = {'start_monitor': 2021})
+run('reduce_dimension', './udfs/reduce_bfast.R', dimension = 't', context = {'start_monitor': 2018})
