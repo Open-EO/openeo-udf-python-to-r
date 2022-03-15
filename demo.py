@@ -26,8 +26,8 @@ def run(process, udf, dimension = None, context = None):
     print('  Time elapsed: %s' % (t2 - t1))
     save_result(result, save_file)
 
-print('apply')
-run('apply', './udfs/apply.R', context = -1)
+#print('apply')
+#run('apply', './udfs/apply.R', context = -1)
 
-#print('reduce_dimension bfast')
-#run('reduce_dimension', './udfs/reduce_bfast.R', dimension = 't', context = {'start_monitor': 2021})
+print('reduce_dimension bfast')
+run('reduce_dimension', './udfs/reduce_bfast.R', dimension = 't', context = {'start_monitor': 2018})
