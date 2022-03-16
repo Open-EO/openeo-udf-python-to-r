@@ -34,10 +34,7 @@ udf_chunked = function(data, context) {
 }
 
 udf_setup = function(context) {
-  #print("setup")
-  #if (!require("bfast")) install.packages("bfast", quiet = TRUE)
-}
-
-udf_teardown = function(context) {
-  #print("teardown")
+  if (!require("bfast")) {
+    install.packages("bfast", quiet = TRUE)
+  }
 }
