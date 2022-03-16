@@ -1,18 +1,13 @@
 import xarray as xr
 import numpy as np
-import rpy2.robjects as robjects
-from rpy2.robjects import numpy2ri
 import requests
 import dask
 from dask import delayed as dask_delayed
-import json
-
-numpy2ri.activate()
+from threaded import call_r
 
 def execute_udf(process, udf, data, dimension = None, context = None, parallelize = False, chunk_size = 1000):
     # Prepare UDF code
     udf_filename = prepare_udf(udf)
-    rFunc = compile_udf_executor()
 
     # Prepare data cube metadata
     input_dims = list(data.dims)
@@ -20,17 +15,6 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
     if dimension is not None:
         output_dims.remove(dimension)
     kwargs_default = {'process': process, 'dimension': dimension, 'context': context, 'file': udf_filename, 'dimensions': list(),  'labels': list()}
-
-    def call_r(data, dimensions, labels, file, process, dimension, context):
-        if dimension is None and context is None:
-            vector = rFunc(data, dimensions, labels, file, process)
-        if context is None:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension)
-        elif dimension is None:
-            vector = rFunc(data, dimensions, labels, file, process, context = json.dumps(context))
-        else:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = json.dumps(context))
-        return vector
 
     if process == 'apply' or process == 'reduce_dimension':
         def runnable(data): 
@@ -141,12 +125,3 @@ def write_udf(data):
         return filename
     else:
         raise Exception("Can't write UDF file")
-
-# Compile R Code once
-def compile_udf_executor():
-    file = open('./executor.R', mode = 'r')
-    rCode = file.read()
-    file.close()
-
-    rEnv = robjects.r(rCode)
-    return robjects.globalenv['main']
