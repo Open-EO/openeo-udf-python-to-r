@@ -46,7 +46,7 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
 
 def get_labels(data):
     labels = []
-    for k in data.coords:
+    for k in data.dims:
         labels.append(data.coords[k].data)
     return labels
 
