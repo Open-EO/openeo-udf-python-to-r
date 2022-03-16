@@ -7,14 +7,13 @@ def compile_udf_executor():
     file.close()
 
     from rpy2.robjects import numpy2ri
+    import rpy2.robjects as robjects
     numpy2ri.activate()
 
-    import rpy2.robjects as robjects
     rEnv = robjects.r(rCode)
     return robjects.globalenv['main']
 
 def call_r(data, dimensions, labels, file, process, dimension, context):
-    
     rFunc = compile_udf_executor()
     if dimension is None and context is None:
         vector = rFunc(data, dimensions, labels, file, process)
