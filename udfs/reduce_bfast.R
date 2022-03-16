@@ -3,7 +3,7 @@ udf_chunked = function(data, context) {
   dates = names(data)
 
   val = if(is.null(context) || is.null(context$val)) "breakpoint" else context$val
-  level = if(is.null(context) || is.null(context$level) || length(context$val) == 0) c(0.05, 0.05) else context$level
+  level = if(is.null(context) || is.null(context$level) || length(context$val) == 0) c(0.001, 0.001) else context$level
 
   # error handling
   stopifnot(length(pixels) == length(dates)) 
