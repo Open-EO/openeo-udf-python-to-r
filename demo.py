@@ -4,7 +4,7 @@ import xarray as xr
 
 # Config
 parallelize = True
-chunk_size = 2000
+chunk_size = 128
 load_file = "r4openeo_uc2_ndvi_mskd.nc"
 save_file = "result_bfast_udf.nc"
 
@@ -19,10 +19,10 @@ data['t'] = data.t.astype('str')
 def run(process, udf, dimension = None, context = None):
     # Run UDF executor
     t1 = time.time() # Start benchmark
-    print('start: ', t1)
+    print('start: ', udf) #t1
     result = execute_udf(process, udf, data, dimension = dimension, context = context, parallelize = parallelize, chunk_size = chunk_size)
     t2 = time.time() # End benchmark
-    print('end: ', t2)
+    print('end: ', udf) #t2
 
     # Print result and benchmark
     print('  Time elapsed: %s' % (t2 - t1))

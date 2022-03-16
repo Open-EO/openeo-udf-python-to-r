@@ -112,16 +112,17 @@ ndvi_ts = data.frame(ndvi = ndvi_ts,
                      ndvi_int = zoo::na.approx(ndvi_ts),
                      dates = st_get_dimension_values(ndvi, "t"))
 
-mapview(pnt) + mapview(bfast_brks_r) + mapview(bfast_brks_udf)
+# mapview(pnt) + mapview(bfast_brks_r) + mapview(bfast_brks_udf)
 
 # extract the breakpoints from bfast
 brk_r = bfast_brks_r[pnt] %>% pull() %>% c() %>% date_decimal()
 brk_udf = bfast_brks_udf[pnt] %>% pull() %>% c() %>% date_decimal()
 
 # plot the ts
-ggplot(ndvi_ts, aes(x=dates, y=ndvi_int)) +
-  geom_line() + 
-  geom_point() +
+ggplot(ndvi_ts, aes(x=dates, y=ndvi)) +
+  geom_point() + 
+  geom_line() +
+  geom_line(aes(x = dates, y = ndvi_int), col = "gray", lty = "dashed", alpha = 0.5) + 
   geom_vline(xintercept = brk_udf, col = "yellow") + 
   geom_vline(xintercept = brk_r, col = "blue")
 
