@@ -123,7 +123,7 @@ ggplot(ndvi_ts, aes(x=dates, y=ndvi)) +
   geom_point() + 
   geom_line() +
   geom_line(aes(x = dates, y = ndvi_int), col = "gray", lty = "dashed", alpha = 0.5) + 
-  geom_vline(xintercept = brk_udf, col = "yellow") + 
+  geom_vline(xintercept = brk_udf, col = "yellow", lwd = 2) + 
   geom_vline(xintercept = brk_r, col = "blue")
 
 

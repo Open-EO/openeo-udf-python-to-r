@@ -4,13 +4,13 @@ import xarray as xr
 
 # Config
 parallelize = True
-chunk_size = 128
-load_file = "r4openeo_uc2_ndvi_mskd.nc"
-save_file = "result_bfast_udf.nc"
+chunk_size = 2000
+load_file = "r4openeo_uc2_ndvi_mskd_smaller.nc"
+save_file = "result_bfast_udf_small.nc"
 
 # Prepare data
 dataset = xr.load_dataset(load_file)
-dataset = dataset.drop('crs')
+dataset = dataset.drop('transverse_mercator') # ('crs')
 data = dataset.to_array(dim = 'var')
 data = data.squeeze('var')
 data = data.drop('var')

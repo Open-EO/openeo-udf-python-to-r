@@ -1,3 +1,5 @@
+suppressWarnings(suppressMessages(library("bfast", quietly = T)))
+
 udf_chunked = function(data, context) {
   pixels = unlist(data) # this are 150000 pixels right now. why? Should be 500
   dates = names(data)
@@ -10,7 +12,7 @@ udf_chunked = function(data, context) {
   stopifnot(val %in% c("breakpoint", "magnitude"))
 
   # create ts object for bfast
-  lsts = bfast::bfastts(pixels, dates, type = c("irregular"))
+  lsts = bfastts(pixels, dates, type = c("irregular"))
 
   # make sure there are enough observations
   if (sum(!is.na(lsts)) < 100){
@@ -18,7 +20,7 @@ udf_chunked = function(data, context) {
   }
  
   # run bfast
-  res = bfast::bfastmonitor(lsts, 
+  res = bfastmonitor(lsts, 
                      context$start_monitor, 
                      formula = response~harmon, 
                      order = 1, 
@@ -32,10 +34,10 @@ udf_chunked = function(data, context) {
 }
 
 udf_setup = function(context) {
-  print("setup");
-  if (!require("bfast")) install.packages("bfast", quiet = TRUE)
+  #print("setup")
+  #if (!require("bfast")) install.packages("bfast", quiet = TRUE)
 }
 
 udf_teardown = function(context) {
-  print("teardown");
+  #print("teardown")
 }
