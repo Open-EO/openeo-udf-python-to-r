@@ -5,7 +5,7 @@ import xarray as xr
 # Config
 parallelize = True
 chunk_size = 2000
-load_file = "r4openeo_uc2_ndvi_mskd_smaller.nc"
+load_file = "r4openeo_uc2_ndvi_mskd_small.nc"
 save_file = "result_bfast_udf_small.nc"
 
 # Prepare data
