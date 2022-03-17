@@ -23,7 +23,6 @@ library("dplyr")
 library("ggplot2")
 library("units")
 library("lubridate")
-
 library("openeo")
 
 ```
@@ -221,7 +220,7 @@ mv_comp
 Select a point interactively.
 
 ```{r select_point}
-pnt = mapedit::drawFeatures(map = mv_comp) %>% st_transform(st_crs(ndvi))
+#pnt = mapedit::drawFeatures(map = mv_comp) %>% st_transform(st_crs(ndvi))
 pnt = st_as_sf(data.frame(x = 697653.4, y = 5148280), coords = c("x", "y"), crs = st_crs(32632))
 ```
 
