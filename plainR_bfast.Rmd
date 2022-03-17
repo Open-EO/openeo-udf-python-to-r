@@ -24,6 +24,61 @@ library("ggplot2")
 library("units")
 library("lubridate")
 
+library("openeo")
+
+```
+
+## Create Process Graph up to UDF
+
+Here we're creating the process graph up to the point where the UDF would run.
+
+```{r process_graph, eval = FALSE}
+host = "https://openeo.cloud"
+con = connect(host, provider = "egi")
+
+spatial_extent = list("west" = 11.564,
+                      "east" = 11.577,
+                      "south" = 46.454,
+                      "north" = 46.461) # ~ 35*26px = 910 px
+
+temporal_extent = list("2016-01-01", "2020-01-01") # 5 yrs, 6 daily = 365*5/6 = 300 ts
+collection = "SENTINEL2_L2A" 
+bands = c("B04", "B08", "CLD")
+
+p = processes()
+s2 = p$load_collection(bands = bands,
+                       id = collection,
+                       spatial_extent = spatial_extent,
+                       temporal_extent = temporal_extent)
+s2_cld = p$filter_bands(bands = list("CLD"),
+                        data = s2, wavelengths = list())
+s2_bnd = p$filter_bands(bands = list("B04", "B08"),
+                        data = s2, wavelengths = list())
+s2_ndvi = p$ndvi(data = s2_bnd, nir = "B08", red = "B04")
+s2_masked = p$mask(data = s2_ndvi, mask = s2_cld)
+# s2_linint = p$apply_dimension(data = s2_masked, 
+#                               dimension = "t", 
+#                               process = function(x, context){
+#                                 p$array_interpolate_linear(x)})
+s2_result = p$save_result(data = s2_masked, format = "NETCDF")
+
+# View the process
+udp = as(s2_result,"Process")
+process_viewer(udp)
+```
+
+In case we want to run this
+
+```{r openeo_batch, eval = FALSE}
+# Batch
+format = "NETCDF"
+title = "r4openeo_uc2_ndvi_bfast_mskd3"
+out_dir = "/home/pzellner@eurac.edu/"
+job = create_job(graph=s2_result, title = title)
+start_job(job = job)
+describe_job(job = job)
+list_results(job = job)
+dwnld = download_results(job = job, folder = paste0(out_dir, title))
 ```
 
 ## Get NDVI Data from openEO platform
@@ -166,7 +221,7 @@ mv_comp
 Select a point interactively.
 
 ```{r select_point}
-#pnt = mapedit::drawFeatures(map = mv_comp) %>% st_transform(st_crs(ndvi))
+pnt = mapedit::drawFeatures(map = mv_comp) %>% st_transform(st_crs(ndvi))
 pnt = st_as_sf(data.frame(x = 697653.4, y = 5148280), coords = c("x", "y"), crs = st_crs(32632))
 ```
 
