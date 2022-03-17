@@ -108,8 +108,7 @@ The runtime of the UDF is for
 
 -   256x256x400: 30 min
 
-The runtime of the plain R for dims(x, y, t) `r dim(ndvi)` is `r format(duration)` 
-
+The runtime of the plain R for dims(x, y, t) `r dim(ndvi)` is `r format(duration)`
 
 ### Spatial Coherence
 
