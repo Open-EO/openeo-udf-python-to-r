@@ -1,0 +1,23 @@
+name: RUDF1
+channels:
+- conda-forge
+dependencies:
+- python=3.7
+- r-base
+- libgdal
+- gdal
+- geos
+- proj
+- pip
+- dask
+- distributed
+- requests
+- numpy
+- xarray
+- rpy2
+- r-stars
+- r-lubridate
+- r-jsonlite
+- r-caret
+- r-tidyverse
+- r-rcurl
