@@ -10,11 +10,12 @@ library("tictoc")
 
 
 # Predictors --------------------------------------------------------------
-s2data<- readRDS("/mnt/CEPH_PROJECTS/SAO/SENTINEL-2/s2_processing/Output/S2_Archive_complete.rds") %>% 
+s2data.all<- readRDS("/mnt/CEPH_PROJECTS/SAO/SENTINEL-2/s2_processing/Output/S2_Archive_complete.rds")
+s2data.tps<- s2data.all %>% 
   dplyr::filter(Tile=="T32TPS") %>% 
   na.omit
 
-data<-s2data[128,]$ESA_L2A
+data<-s2data.tps[128,]$ESA_L2A
 data.read<-read_stars(data)
 
 
@@ -45,5 +46,18 @@ rf1<-train(Target~.,
 toc()
 
 saveRDS(rf1,"models/TestModel1.rds")
+
+# Target dataset ----------------------------------------------------------
+
+s2data.tpt<- s2data.all %>% 
+  dplyr::filter(Tile=="T32TPT") %>% 
+  na.omit
+
+data.tpt<-s2data.tps[128,]$ESA_L2A
+data.tpt.read<-read_stars(data.tpt)
+
+data.tpt.read.sub<-data.tpt.read[,1:500,1:500,] %>% st_as_stars()
+
+write_stars(data.tpt.read.sub,"models/testimg.tif")
 
 
