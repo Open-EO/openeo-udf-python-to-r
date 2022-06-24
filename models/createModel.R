@@ -34,7 +34,8 @@ rptsP<-st_transform(rpts,st_crs(data.read))
 # Extraction --------------------------------------------------------------
 tvals<-st_extract(target,st_coordinates(rpts))
 pvals<-st_extract(data.read,st_coordinates(rptsP))
-dataset<-cbind(tvals,pvals) %>% as_tibble() %>% setNames(c("Target","B02","B03","B04","B08"))
+dataset<-cbind(tvals,pvals) %>% as_tibble() %>% setNames(c("Target","B02","B03","B04","B08")) %>% 
+  mutate(Target=as.character(Target))
 
 
 # Model -------------------------------------------------------------------
@@ -58,6 +59,6 @@ data.tpt.read<-read_stars(data.tpt)
 
 data.tpt.read.sub<-data.tpt.read[,1:500,1:500,] %>% st_as_stars()
 
-write_stars(data.tpt.read.sub,"models/testimg.tif")
+write_stars(data.tpt.read.sub,"models/testimg.nc")
 
 
