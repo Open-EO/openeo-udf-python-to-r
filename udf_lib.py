@@ -19,7 +19,7 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
     output_dims = list(data.dims)
     if dimension is not None:
         output_dims.remove(dimension)
-    kwargs_default = {'process': process, 'dimension': dimension, 'context': context, 'file': udf_filename, 'dimensions': list(),  'labels': list()}
+    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_filename, 'dimensions': list(),  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
         if dimension is None and context is None:
@@ -27,9 +27,9 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
         if context is None:
             vector = rFunc(data, dimensions, labels, file, process, dimension = dimension)
         elif dimension is None:
-            vector = rFunc(data, dimensions, labels, file, process, context = json.dumps(context))
+            vector = rFunc(data, dimensions, labels, file, process, context = context)
         else:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = json.dumps(context))
+            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
         return vector
 
     if process == 'apply' or process == 'reduce_dimension':
