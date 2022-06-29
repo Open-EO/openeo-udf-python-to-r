@@ -7,7 +7,7 @@ dims = ['x', 'y', 't', 'b']
 dates = pd.date_range(start = '1-1-2018', periods = 4*365).tolist()
 for i in range(0, len(dates)):
     dates[i] = dates[i].strftime("%Y-%m-%dT%H:%M:%SZ")
-sizes = [10, 10, len(dates), 3]
+sizes = [20, 20, len(dates), 3]
 labels = {
     # x and y get generated automatically for now (todo: get from actual data)
     'x': None,
@@ -16,7 +16,7 @@ labels = {
     'b': ['b1', 'b2', 'b3']
 }
 parallelize = True
-chunk_size = 2000
+chunk_size = 10
 
 def run(process, udf, dimension = None, context = None):
     # Prepare data
@@ -33,4 +33,4 @@ def run(process, udf, dimension = None, context = None):
 
 
 print('reduce_dimension bfast')
-run('reduce_dimension', './udfs/reduce_bfast.R', dimension = 't', context = {'start_monitor': 2021})
+run('reduce_dimension', './udfs/reduce_bfast.R', dimension = 't', context = {'start_monitor': 2020})
