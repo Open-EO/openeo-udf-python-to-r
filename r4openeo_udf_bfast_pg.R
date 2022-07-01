@@ -1,4 +1,4 @@
-#remotes::install_github(repo="Open-EO/openeo-r-client", dependencies=TRUE, ref="develop")
+# remotes::install_github(repo="Open-EO/openeo-r-client", dependencies=TRUE, ref="develop")
 
 # auth -------------------------------------------------------------------------
 library(openeo)
