@@ -16,7 +16,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     if (name == "x" || name == "y") {
       dc = st_set_dimensions(dc, name, values = as.numeric(values))
     }
-    else if (name == "t") {
+    else if (name == "t" || name == "time" || name == "temporal") {
       dc = st_set_dimensions(dc, name, values = lubridate::as_datetime(values))
     }
     else {

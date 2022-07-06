@@ -1,5 +1,6 @@
 from udf_lib import execute_udf, create_dummy_cube
 import time
+import tempfile
 
 # Data Cube config
 dims = ['x', 'y', 't', 'b']
@@ -17,21 +18,22 @@ chunk_size = 2000
 # Prepare data
 data = create_dummy_cube(dims, sizes, labels)
 
-def run(process, udf, dimension = None, context = None):
+def run(process, udf, udf_folder, dimension = None, context = None):
     # Run UDF executor
     t1 = time.time() # Start benchmark
-    result = execute_udf(process, udf, data, dimension = dimension, context = context, parallelize = parallelize, chunk_size = chunk_size)
+    result = execute_udf(process, udf, udf_folder, data, dimension = dimension, context = context, parallelize = parallelize, chunk_size = chunk_size)
     t2 = time.time() # End benchmark
 
     # Print result and benchmark
     print('  Time elapsed: %s' % (t2 - t1))
     # print(result)
 
-print('apply')
-run('apply', './udfs/apply.R', context = -1)
+with tempfile.TemporaryDirectory() as folder:
+    print('apply')
+    run('apply', './udfs/apply.R', folder, context = -1)
 
-print('reduce_dimension vectorized')
-run('reduce_dimension', './udfs/reduce.R', dimension = 'b', context = -1)
+    print('reduce_dimension vectorized')
+    run('reduce_dimension', './udfs/reduce.R', folder, dimension = 'b', context = -1)
 
 # print('reduce_dimension chunked')
 # run('reduce_dimension', './udfs/reduce_slow.R', dimension = 'b', context = -1)

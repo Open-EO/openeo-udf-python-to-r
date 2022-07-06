@@ -9,9 +9,8 @@ import json
 
 numpy2ri.activate()
 
-def execute_udf(process, udf, data, dimension = None, context = None, parallelize = False, chunk_size = 1000):
-    # Prepare UDF code
-    udf_filename = prepare_udf(udf)
+def execute_udf(process, udf, udf_folder, data, dimension = None, context = None, parallelize = False, chunk_size = 1000):
+    udf_filename = prepare_udf(udf, udf_folder)
     rFunc = compile_udf_executor()
 
     # Prepare data cube metadata
@@ -19,7 +18,7 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
     output_dims = list(data.dims)
     if dimension is not None:
         output_dims.remove(dimension)
-    kwargs_default = {'process': process, 'dimension': dimension, 'context': context, 'file': udf_filename, 'dimensions': list(),  'labels': list()}
+    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_filename, 'dimensions': list(),  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
         if dimension is None and context is None:
@@ -27,9 +26,9 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
         if context is None:
             vector = rFunc(data, dimensions, labels, file, process, dimension = dimension)
         elif dimension is None:
-            vector = rFunc(data, dimensions, labels, file, process, context = json.dumps(context))
+            vector = rFunc(data, dimensions, labels, file, process, context = context)
         else:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = json.dumps(context))
+            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
         return vector
 
     if process == 'apply' or process == 'reduce_dimension':
@@ -62,7 +61,7 @@ def execute_udf(process, udf, data, dimension = None, context = None, paralleliz
 
 def get_labels(data):
     labels = []
-    for k in data.coords:
+    for k in data.dims:
         labels.append(data.coords[k].data)
     return labels
 
@@ -106,10 +105,7 @@ def chunk_cube(data, dimension = None, size = 1000):
 
     return chunks
 
-def generate_filename():
-    return "./udfs/temp.R" # todo
-
-def prepare_udf(udf):
+def prepare_udf(udf, udf_folder = None):
     if isinstance(udf, str) == False :
         raise "Invalid UDF specified"
 
@@ -118,16 +114,16 @@ def prepare_udf(udf):
         if r.status_code != 200:
             raise Exception("Provided URL for UDF can't be accessed")
         
-        return write_udf(r.content)
+        return write_udf(r.content, udf_folder)
     elif "\n" in udf or "\r" in udf: # code
-        return write_udf(udf)
+        return write_udf(udf, udf_folder)
     else: # file path
         return udf
 
-def write_udf(data):
-    filename = generate_filename()
+def write_udf(data, udf_folder):
     success = False
-    file = open(filename, 'w')
+    path = os.join(udf_folder, 'udf.R')
+    file = open(path, 'w')
     try:
         file.write(data)
         success = True
@@ -135,9 +131,9 @@ def write_udf(data):
         file.close()
     
     if success == True:
-        return filename
+        return path
     else:
-        raise Exception("Can't write UDF file")
+        raise Exception("Can't write UDF file to " + path)
 
 # Compile R Code once
 def compile_udf_executor():
