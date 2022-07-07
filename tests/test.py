@@ -1,4 +1,4 @@
-from udf_lib import execute_udf, create_dummy_cube
+from openeo_r_udf.udf_lib import execute_udf, create_dummy_cube
 import time
 import tempfile
 
