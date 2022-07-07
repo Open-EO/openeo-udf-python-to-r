@@ -118,7 +118,8 @@ RUN pip3 install rpy2 xarray requests dask
 WORKDIR /root
 RUN git clone https://github.com/Open-EO/openeo-udf-python-to-r.git
 RUN ls openeo-udf-python-to-r
-#RUN (cd openeo-udf-python-to-r/tests; python3 test.py)
+RUN pip install .
+# RUN python3 tests/test.py
 
 RUN yum remove -y gcc gcc-c++ gcc-gfortran 
 

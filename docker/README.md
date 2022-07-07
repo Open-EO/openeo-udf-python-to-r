@@ -12,5 +12,5 @@ docker run -ti alma
 and then, on the shell prompt run the UDF test with
 
 ```
-(cd openeo-udf-python-to-r; python3 test.py)
+python3 tests/test.py
 ```
