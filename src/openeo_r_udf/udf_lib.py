@@ -137,7 +137,7 @@ def write_udf(data, udf_folder):
 
 # Compile R Code once
 def compile_udf_executor():
-    file = open('./executor.R', mode = 'r')
+    file = open('./src/openeo_r_udf/executor.R', mode = 'r')
     rCode = file.read()
     file.close()
 

@@ -30,13 +30,10 @@ def run(process, udf, udf_folder, dimension = None, context = None):
 
 with tempfile.TemporaryDirectory() as folder:
     print('apply')
-    run('apply', './udfs/apply.R', folder, context = -1)
+    run('apply', './tests/udfs/apply.R', folder, context = -1)
 
     print('reduce_dimension vectorized')
-    run('reduce_dimension', './udfs/reduce.R', folder, dimension = 'b', context = -1)
-
-# print('reduce_dimension chunked')
-# run('reduce_dimension', './udfs/reduce_slow.R', dimension = 'b', context = -1)
+    run('reduce_dimension', './tests/udfs/reduce.R', folder, dimension = 'b', context = -1)
 
 # Benchmark for 100x100x10x3:
 # apply: 1.5 sec
