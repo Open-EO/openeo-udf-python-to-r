@@ -37,4 +37,4 @@ udf_setup = function(context) {
     install.packages("bfast", quiet = TRUE)
   }
   suppressWarnings(suppressMessages(library("bfast", quietly = T)))
-}}
+}
