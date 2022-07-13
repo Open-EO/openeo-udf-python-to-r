@@ -1,4 +1,4 @@
-from udf_lib import execute_udf, save_result
+from udf_lib import execute_udf
 import time
 import xarray as xr
 
@@ -26,7 +26,6 @@ def run(process, udf, dimension = None, context = None):
 
     # Print result and benchmark
     print('  Time elapsed: %s' % (t2 - t1))
-    save_result(result, save_file)
 
 #print('apply')
 #run('apply', './udfs/apply.R', context = -1)
