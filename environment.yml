@@ -1,4 +1,4 @@
-name: python-to-r-udf
+name: openeo-r-udf
 channels:
 - conda-forge
 dependencies:

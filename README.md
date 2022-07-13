@@ -1,4 +1,4 @@
-# openeo-udf-python-to-r
+# openeo-udf-python-to-r / openeo-r-udf
 
 This is an experimental engine for openEO to run R UDFs from an R environment.
 
@@ -10,12 +10,38 @@ This repository contains the following content:
 - The script to run for testing is `tests/test.py`.
 - The folder `tests/udfs` contains UDF examples as users could provide them.
 - `udf_lib.py` is a Python library with the Python code required to run R UDFs from Python
-- `executor.r` is the R script that is run from R and executes the R UDF in the Python environment.
+- `executor.R` is the R script that is run from R and executes the R UDF in the Python environment.
+- `docker/` is the folder containing a docker image.
 
 The following image shows how the implementation roughly works:
 ![Workflow](docs/workflow.png)
 
+## Install from pypi
+
+*This is for back-end developers or end-users that want to test their UDFs locally*
+
+You can install this library from pypi:
+`pip install openeo-r-udf`
+
+You can then import the UDF library from Python:
+`from openeo_r_udf.udf_lib import execute_udf`
+
+Afterwards, you can call the UDF library in Python as follows:
+`execute_udf(process, udf, udf_folder, data, dimension, context, parallelize, chunk_size)`
+
+The following parameters are available:
+- `process` (string - The parent process, i.e. `apply` or `reduce_dimension`)
+- `udf` (string - The content of the parameter `udf` from `run_udf`, i.e. UDF code or a path/URL to a UDF)
+- `udf_folder` (string - The folder where the UDFs reside or should be written to)
+- `data` (xarray.DataArray - The data to process)
+- `dimension` (string, defaults to `None` - The dimension to work on if applicable, doesn't apply for `apply`)
+- `context` (Any, defaults to `None` - The data that has been passed in the `context` parameter)
+- `parallelize` (**experimental**, boolean, defaults to `False` - Enables or disables parallelization)
+- `chunk_size` (**experimental**, integer, defaults to `1000` - Chunk size for parallelization)
+
 ## Writing a UDF
+
+*This is for end-users*
 
 A UDF must be written differently depending on where it is executed.
 The underlying library used for data handling is always [`stars`](https://r-spatial.github.io/stars/).

@@ -7,10 +7,12 @@ import dask
 from dask import delayed as dask_delayed
 import json
 import os
+import pkg_resources
+from typing import Any, Optional
 
 numpy2ri.activate()
 
-def execute_udf(process, udf, udf_folder, data, dimension = None, context = None, parallelize = False, chunk_size = 1000):
+def execute_udf(process: str, udf: str, udf_folder: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None, parallelize: bool = False, chunk_size: int = 1000):
     udf_filename = prepare_udf(udf, udf_folder)
     rFunc = compile_udf_executor()
 
@@ -66,7 +68,7 @@ def get_labels(data):
         labels.append(data.coords[k].data)
     return labels
 
-def create_dummy_cube(dims, sizes, labels):
+def create_dummy_cube(dims, sizes, labels) -> xr.DataArray:
     npData = np.random.rand(*sizes)
     if (labels['x'] is None):
         labels['x'] = np.arange(npData.shape[0])
@@ -137,9 +139,8 @@ def write_udf(data, udf_folder):
 
 # Compile R Code once
 def compile_udf_executor():
-    import pkg_resources
-    executor_R_file = pkg_resources.resource_filename(__name__, 'executor.R')
-    file = open(executor_R_file, mode = 'r')
+    executor_R_path = pkg_resources.resource_filename(__name__, 'executor.R')
+    file = open(executor_R_path, mode = 'r')
     rCode = file.read()
     file.close()
     rEnv = robjects.r(rCode)
