@@ -114,8 +114,7 @@ def prepare_udf(udf, udf_folder = None):
         r = requests.get(udf)
         if r.status_code != 200:
             raise Exception("Provided URL for UDF can't be accessed")
-        
-        return write_udf(r.content, udf_folder)
+        return write_udf(r.text, udf_folder)
     elif "\n" in udf or "\r" in udf: # code
         return write_udf(udf, udf_folder)
     else: # file path
@@ -123,7 +122,7 @@ def prepare_udf(udf, udf_folder = None):
 
 def write_udf(data, udf_folder):
     success = False
-    path = os.join(udf_folder, 'udf.R')
+    path = os.path.join(udf_folder, 'udf.R')
     file = open(path, 'w')
     try:
         file.write(data)
@@ -138,9 +137,10 @@ def write_udf(data, udf_folder):
 
 # Compile R Code once
 def compile_udf_executor():
-    file = open('./src/openeo_r_udf/executor.R', mode = 'r')
+    import pkg_resources
+    executor_R_file = pkg_resources.resource_filename(__name__, 'executor.R')
+    file = open(executor_R_file, mode = 'r')
     rCode = file.read()
     file.close()
-
     rEnv = robjects.r(rCode)
     return robjects.globalenv['main']
