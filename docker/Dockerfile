@@ -112,14 +112,7 @@ RUN yum install -y dnf --enablerepo=powertools \
     git
 
 RUN R -e 'install.packages(c("stars", "jsonlite", "curl", "lubridate"), repos = "https://cloud.r-project.org")'
-RUN pip3 install rpy2 xarray requests dask
-
-# EP: install UDF test script and run it:
-WORKDIR /root
-RUN git clone https://github.com/Open-EO/openeo-udf-python-to-r.git
-RUN ls openeo-udf-python-to-r
-RUN pip install .
-# RUN python3 tests/test.py
+RUN pip3 install rpy2 xarray requests dask openeo-r-udf
 
 RUN yum remove -y gcc gcc-c++ gcc-gfortran 
 
