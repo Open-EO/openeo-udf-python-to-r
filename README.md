@@ -161,3 +161,10 @@ udf_teardown = function(context) {
 ```
 
 **Note:** `udf_teardown` is only executed if none of the `udf_chunked` calls has resulted in an error.
+
+## Examples
+### Dockerimage for running on a backend
+https://github.com/Open-EO/r4openeo-usecases/tree/main/vito-docker
+
+### Implementation at Eurac
+tbd
