@@ -1,10 +1,11 @@
-from openeo_r_udf.udf_lib import prepare_udf, execute_udf, create_dummy_cube
+from openeo_r_udf.udf_lib import prepare_udf, execute_udf, chunk_cube, combine_cubes, create_dummy_cube
+from joblib import Parallel, delayed as joblibDelayed
 import time
 import tempfile
 
 # Data Cube config
 dims = ['x', 'y', 't', 'b']
-sizes = [740, 100, 10, 3]
+sizes = [7400, 1000, 10, 3]
 labels = {
     # x and y get generated automatically for now (todo: get from actual data)
     'x': None,
@@ -13,14 +14,27 @@ labels = {
     'b': ['b1', 'b2', 'b3']
 }
 
+# Parallelization config
+chunk_size = 1000
+num_jobs = -1
+
 # Prepare data
 data = create_dummy_cube(dims, sizes, labels)
 
 def run(process, udf, udf_folder, dimension = None, context = None):
     udf_path = prepare_udf(udf, udf_folder)
-    # Run UDF executor
+
+    # Define callback function
+    def compute_udf(data):
+        return execute_udf(process, udf_path, data.compute(), dimension = dimension, context = context)
+    
     t1 = time.time() # Start benchmark
-    result = execute_udf(process, udf_path, data, dimension = dimension, context = context)
+
+    # Run UDF executor in parallel
+    input_data_chunked = chunk_cube(data, size=chunk_size)
+    results = Parallel(n_jobs=num_jobs, verbose=51)(joblibDelayed(compute_udf)(data) for data in input_data_chunked)
+    result = combine_cubes(results)
+
     t2 = time.time() # End benchmark
 
     # Print result and benchmark
@@ -33,4 +47,3 @@ with tempfile.TemporaryDirectory() as folder:
 
     print('reduce_dimension vectorized')
     run('reduce_dimension', './tests/udfs/reduce.R', folder, dimension = 'b', context = -1)
-

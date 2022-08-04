@@ -9,8 +9,6 @@ dependencies:
 - geos
 - proj
 - pip
-- dask
-- distributed
 - requests
 - numpy
 - xarray

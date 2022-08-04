@@ -7,11 +7,10 @@ This currently is limited to R UDFs that are running without any other processes
 - `reduce_dimension`
 
 This repository contains the following content:
-- The script to run for testing is `tests/test.py`.
+- The scripts to run for testing: `tests/test.py` (single core) and `tests/test_parallel.py` (parallelized).
 - The folder `tests/udfs` contains UDF examples as users could provide them.
 - `udf_lib.py` is a Python library with the Python code required to run R UDFs from Python
 - `executor.R` is the R script that is run from R and executes the R UDF in the Python environment.
-- `docker/` is the folder containing a docker image.
 
 The following image shows how the implementation roughly works:
 ![Workflow](docs/workflow.png)
@@ -23,21 +22,55 @@ The following image shows how the implementation roughly works:
 You can install this library from pypi:
 `pip install openeo-r-udf`
 
-You can then import the UDF library from Python:
-`from openeo_r_udf.udf_lib import execute_udf`
-
-Afterwards, you can call the UDF library in Python as follows:
-`execute_udf(process, udf, udf_folder, data, dimension, context, parallelize, chunk_size)`
-
-The following parameters are available:
-- `process` (string - The parent process, i.e. `apply` or `reduce_dimension`)
+The following variables should be defined:
 - `udf` (string - The content of the parameter `udf` from `run_udf`, i.e. UDF code or a path/URL to a UDF)
 - `udf_folder` (string - The folder where the UDFs reside or should be written to)
+- `process` (string - The parent process, i.e. `apply` or `reduce_dimension`)
 - `data` (xarray.DataArray - The data to process)
 - `dimension` (string, defaults to `None` - The dimension to work on if applicable, doesn't apply for `apply`)
 - `context` (Any, defaults to `None` - The data that has been passed in the `context` parameter)
-- `parallelize` (**experimental**, boolean, defaults to `False` - Enables or disables parallelization)
-- `chunk_size` (**experimental**, integer, defaults to `1000` - Chunk size for parallelization)
+
+Use it from Python **without** parallelization:
+
+```python
+# import the UDF library
+from openeo_r_udf.udf_lib import prepare_udf, execute_udf
+
+# Define variables as documented above
+
+# Load UDF file (this should not be paralelized)
+udf_path = prepare_udf(udf, udf_folder)
+
+# Execute UDF file (this can be parallelized)
+result = execute_udf(process, udf_path, data, dimension=dimension, context=context)
+```
+
+Use it from Python **with** parallelization:
+```python
+# import the UDF library - make sure to install joblib before
+from openeo_r_udf.udf_lib import prepare_udf, execute_udf, chunk_cube, combine_cubes
+from joblib import Parallel, delayed as joblibDelayed
+
+# Parallelization config
+chunk_size = 1000
+num_jobs = -1
+
+# Define variables as documented above
+
+# Load UDF file (this should not be paralelized)
+udf_path = prepare_udf(udf, udf_folder)
+
+# Define callback function
+def compute_udf(data):
+    return execute_udf(process, udf_path, data.compute(), dimension=dimension, context=context)
+
+# Run UDF in parallel
+input_data_chunked = chunk_cube(data, size=chunk_size)
+results = Parallel(n_jobs=num_jobs, verbose=51)(joblibDelayed(compute_udf)(data) for data in input_data_chunked)
+result = combine_cubes(results)
+```
+
+The `result` variable holds the processed data as an xarray.DataArray again.
 
 ## Writing a UDF
 

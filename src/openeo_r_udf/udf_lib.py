@@ -3,8 +3,6 @@ import numpy as np
 import rpy2.robjects as robjects
 from rpy2.robjects import numpy2ri
 import requests
-import dask
-from dask import delayed as dask_delayed
 import json
 import os
 import pkg_resources
@@ -12,8 +10,7 @@ from typing import Any, Optional
 
 numpy2ri.activate()
 
-def execute_udf(process: str, udf: str, udf_folder: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None, parallelize: bool = False, chunk_size: int = 1000):
-    udf_filename = prepare_udf(udf, udf_folder)
+def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None):
     rFunc = compile_udf_executor()
 
     # Prepare data cube metadata
@@ -21,7 +18,7 @@ def execute_udf(process: str, udf: str, udf_folder: str, data: xr.DataArray, dim
     output_dims = list(data.dims)
     if dimension is not None:
         output_dims.remove(dimension)
-    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_filename, 'dimensions': list(),  'labels': list()}
+    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': list(),  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
         if dimension is None and context is None:
@@ -46,19 +43,7 @@ def execute_udf(process: str, udf: str, udf_folder: str, data: xr.DataArray, dim
                 # exclude_dims could be useful for apply_dimension?
             )
 
-        if parallelize:
-            # Chunk data
-            chunks = chunk_cube(data, dimension = dimension, size = chunk_size)
-            # Execute in parallel
-            dask_calls_list = []
-            for chunk in chunks:
-                dask_calls_list.append(dask_delayed(runnable)(chunk))
-            chunks = dask.compute(*dask_calls_list)
-            # Combine data again
-            return combine_cubes(chunks)
-        else:
-            # Don't parallelize
-            return runnable(data)
+        return runnable(data)
     else:
         raise Exception("Not implemented yet for Python")
 
