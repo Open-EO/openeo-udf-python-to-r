@@ -201,3 +201,6 @@ https://github.com/Open-EO/r4openeo-usecases/tree/main/vito-docker
 
 ### Implementation at Eurac
 tbd
+
+### R4openEO use cases
+https://github.com/Open-EO/r4openeo-usecases 
