@@ -45,19 +45,23 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
 
         return runnable(data)
     else:
-        raise Exception("Not implemented yet for Python")
+        raise Exception(f"Given process '{process}' not implemented yet for Python")
 
 def get_labels(data):
-    labels = []
+    dim_labels = []
     for k in data.dims:
-        labels.append(data.coords[k].data)
-    return labels
+        labels = data.coords[k].data
+        datatype = str(data.coords[k].data.dtype)
+        if datatype.startswith('datetime64'):
+            labels = labels.astype(str)
+        dim_labels.append(labels)
+    return dim_labels
 
 def create_dummy_cube(dims, sizes, labels) -> xr.DataArray:
     npData = np.random.rand(*sizes)
-    if (labels['x'] is None):
+    if labels['x'] is None:
         labels['x'] = np.arange(npData.shape[0])
-    if (labels['y'] is None):
+    if labels['y'] is None:
         labels['y'] = np.arange(npData.shape[1])
     xrData = xr.DataArray(npData, dims = dims, coords = labels)
     return xrData
