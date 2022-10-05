@@ -4,6 +4,7 @@ This is an experimental engine for openEO to run R UDFs from an R environment.
 
 This currently is limited to R UDFs that are running without any other processes in the following processes:
 - `apply`
+- `apply_dimension`
 - `reduce_dimension`
 
 This repository contains the following content:
@@ -25,7 +26,7 @@ You can install this library from pypi:
 The following variables should be defined:
 - `udf` (string - The content of the parameter `udf` from `run_udf`, i.e. UDF code or a path/URL to a UDF)
 - `udf_folder` (string - The folder where the UDFs reside or should be written to)
-- `process` (string - The parent process, i.e. `apply` or `reduce_dimension`)
+- `process` (string - The parent process, i.e. `apply`, `apply_dimension` or `reduce_dimension`)
 - `data` (xarray.DataArray - The data to process)
 - `dimension` (string, defaults to `None` - The dimension to work on if applicable, doesn't apply for `apply`)
 - `context` (Any, defaults to `None` - The data that has been passed in the `context` parameter)
@@ -101,6 +102,16 @@ udf = function(x, context) {
   max(abs(x) * context$a, context$max)
 }
 ```
+
+### apply_dimension
+
+A UDF that is executed inside the process `apply_dimension` takes all values along a dimension and computes new values based on them.
+This could for example compute a moving average over a timeseries.
+
+There are two different variants of UDFs that can be used as processes for `apply_dimension`.
+A reducer can be executed either "vectorized" or "per chunk".
+This is the same behavior as defined for `reduce_dimension`. 
+Please see below for more details.
 
 ### reduce_dimension
 

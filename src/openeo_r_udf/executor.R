@@ -31,8 +31,9 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     # apply on each pixel
     dc = udf(dc, context)
   }
-  else if(process == 'reduce_dimension') {
-    # reduce data cube
+  else if(process == 'reduce_dimension' || process == 'apply_dimension') {
+    # reduce data cube OR
+    # apply along a single dimension, e.g. along t for timeseries
     margin = dimensions[dimensions != dimension]
     if (exists("udf_chunked")) {
       if (exists("udf_setup")) {
@@ -40,9 +41,22 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
       }
       prepare = function(data) {
         names(data) = dim_labels
-        return (udf_chunked(data, context))
+        result = udf_chunked(data, context)
+        return(result)
       }
-      dc = st_apply(dc, margin, prepare)
+      old_length = dim(dc)[dimension]
+      if (process == 'reduce_dimension') {
+        dc = st_apply(dc, margin, prepare)
+      }
+      else {
+        # apply the function and keep the labels. aperm restores the old dimension order.
+        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dimensions)
+        new_length = dim(dc)[dimension]
+        if (new_length != old_length) {
+          # Create new coordinates (integers starting with 0) as the length has changed
+          dc = st_set_dimensions(dc, dimension, values = 1:new_length)
+        }
+      }
       if (exists("udf_teardown")) {
         udf_teardown(context)
       }
@@ -51,9 +65,15 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
       prepare = function(x1, x2, ...) {
         data = append(list(x1, x2), list(...))
         names(data) = dim_labels
-        return (udf(data, context))
+        result = udf(data, context)
+        return(result)
       }
-      dc = st_apply(dc, margin, prepare)
+      if (process == 'reduce_dimension') {
+        dc = st_apply(dc, margin, prepare)
+      }
+      else {
+        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dimensions)
+      }
     }
   }
   else {

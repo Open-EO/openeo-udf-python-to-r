@@ -16,8 +16,14 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
     # Prepare data cube metadata
     input_dims = list(data.dims)
     output_dims = list(data.dims)
-    if dimension is not None:
+    exclude_dims = set()
+    if process == 'reduce_dimension':
+        # Reduce over the given dimension / remove the dimension
         output_dims.remove(dimension)
+    elif process == 'apply_dimension':
+        # Allow the dimension to change the size
+        exclude_dims.add(dimension)
+    
     kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': list(),  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
@@ -31,17 +37,31 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
             vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
         return vector
 
-    if process == 'apply' or process == 'reduce_dimension':
+    if process == 'apply' or process == 'apply_dimension' or process == 'reduce_dimension':
         def runnable(data): 
             kwargs = kwargs_default.copy()
             kwargs['dimensions'] = list(data.dims)
             kwargs['labels'] = get_labels(data)
-            return xr.apply_ufunc(
+            new_data = xr.apply_ufunc(
                 call_r, data, kwargs = kwargs,
                 input_core_dims = [input_dims], output_core_dims = [output_dims],
-                vectorize = True
-                # exclude_dims could be useful for apply_dimension?
+                vectorize = True,
+                exclude_dims=exclude_dims
             )
+            # Reassign the coords after they have been removed for apply_dimensions through the exclude_dims argument
+            if process == 'apply_dimension':
+                new_length = new_data.sizes[dimension]
+                if data.sizes[dimension] == new_length:
+                    # Set old coordinates again as the length has not changed
+                    labels = data.coords[dimension].data
+                else:
+                    # Create new coordinates (integers starting with 0) as the length has changed
+                    labels = list(range(0, new_length))
+                coords = {}
+                coords[dimension] = labels
+                new_data = new_data.assign_coords(**coords)
+
+            return new_data
 
         return runnable(data)
     else:
