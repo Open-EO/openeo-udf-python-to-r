@@ -1,22 +1,24 @@
 suppressWarnings(suppressMessages(library("stars", quietly = T)))
 
 main = function(data, dimensions, labels, file, process, dimension = NULL, context = NULL) {
-  dimensions = unlist(dimensions)
+  dimensions = jsonlite::fromJSON(dimensions)
   context = if (is.null(context)) context else jsonlite::fromJSON(context)
   dim_labels = NULL
 
   source(file)
 
   # create data cube in stars
+  dim_names = names(dimensions)
   dc = st_as_stars(data)
-  dc = st_set_dimensions(dc, names = dimensions)
-  for(i in 1:length(dimensions)) {
-    name = dimensions[i]
+  dc = st_set_dimensions(dc, names = dim_names)
+  for(i in 1:length(dim_names)) {
+    name = dim_names[i]
+    type = dimensions[name]
     values = unlist(labels[i])
-    if (name == "x" || name == "y") {
+    if (type == "spatial") {
       dc = st_set_dimensions(dc, name, values = as.numeric(values))
     }
-    else if (name == "t" || name == "time" || name == "temporal") {
+    else if (type == "temporal") {
       dc = st_set_dimensions(dc, name, values = lubridate::as_datetime(values))
     }
     else {
@@ -34,7 +36,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
   else if(process == 'reduce_dimension' || process == 'apply_dimension') {
     # reduce data cube OR
     # apply along a single dimension, e.g. along t for timeseries
-    margin = dimensions[dimensions != dimension]
+    margin = dim_names[dim_names != dimension]
     if (exists("udf_chunked")) {
       if (exists("udf_setup")) {
         udf_setup(context)
@@ -50,7 +52,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
       }
       else {
         # apply the function and keep the labels. aperm restores the old dimension order.
-        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dimensions)
+        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dim_names)
         new_length = dim(dc)[dimension]
         if (new_length != old_length) {
           # Create new coordinates (integers starting with 0) as the length has changed
@@ -72,7 +74,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
         dc = st_apply(dc, margin, prepare)
       }
       else {
-        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dimensions)
+        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dim_names)
       }
     }
   }

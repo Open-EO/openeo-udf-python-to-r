@@ -24,7 +24,7 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
         # Allow the dimension to change the size
         exclude_dims.add(dimension)
     
-    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': list(),  'labels': list()}
+    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': None,  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
         if dimension is None and context is None:
@@ -39,8 +39,18 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
 
     if process == 'apply' or process == 'apply_dimension' or process == 'reduce_dimension':
         def runnable(data): 
+            dimensions = dict()
+            for dim in list(data.dims):
+                datatype = str(data.coords[dim].data.dtype)
+                if datatype.startswith('datetime64') or dim == 't' or dim == 'time' or dim == 'temporal':
+                    dimensions[dim] = 'temporal'
+                elif dim == 'x' or dim == 'y' or dim == 'lat' or dim == 'lon':
+                    dimensions[dim] = 'spatial'
+                else:
+                    dimensions[dim] = 'other'
+
             kwargs = kwargs_default.copy()
-            kwargs['dimensions'] = list(data.dims)
+            kwargs['dimensions'] = json.dumps(dimensions)
             kwargs['labels'] = get_labels(data)
             new_data = xr.apply_ufunc(
                 call_r, data, kwargs = kwargs,
