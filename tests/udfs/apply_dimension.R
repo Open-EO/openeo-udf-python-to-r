@@ -5,6 +5,7 @@ udf_chunked = function(data, context) {
   for (i in 1:length(data)) {
     start = max(1, i-context)
     end = min(length(data), i+context)
+    print(c(start, end))
     avg_data[i] = mean(data[start:end])
   }
   return(avg_data)

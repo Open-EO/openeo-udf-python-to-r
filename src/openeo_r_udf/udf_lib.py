@@ -28,14 +28,15 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
         if dimension is None and context is None:
-            vector = rFunc(data, dimensions, labels, file, process)
+            result = rFunc(data, dimensions, labels, file, process)
         if context is None:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension)
+            result = rFunc(data, dimensions, labels, file, process, dimension = dimension)
         elif dimension is None:
-            vector = rFunc(data, dimensions, labels, file, process, context = context)
+            result = rFunc(data, dimensions, labels, file, process, context = context)
         else:
-            vector = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
-        return vector
+            result = rFunc(data, dimensions, labels, file, process, dimension = dimension, context = context)
+        print(result[1])
+        return result[0]
 
     if process == 'apply' or process == 'apply_dimension' or process == 'reduce_dimension':
         def runnable(data): 
