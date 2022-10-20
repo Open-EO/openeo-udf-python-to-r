@@ -206,6 +206,23 @@ udf_teardown = function(context) {
 
 **Note:** `udf_teardown` is only executed if none of the `udf_chunked` calls has resulted in an error.
 
+If you'd like to make some data available that you have prepared e.g. in `udf_setup`, you can use a global variable
+and the [special assignment operator](https://cran.r-project.org/doc/manuals/R-intro.html#Scope) `<<-` to assign to variables in the outer environments:
+
+**Example:**
+
+```r
+model <- NULL
+
+udf_setup = function(context) {
+  model <<- load_model("https://example.com/model")
+}
+
+udf_chunked = function(data, context) {
+  return(predict(data, model))
+}
+```
+
 ## Examples
 ### Dockerimage for running on a backend
 https://github.com/Open-EO/r4openeo-usecases/tree/main/vito-docker
