@@ -206,8 +206,8 @@ udf_teardown = function(context) {
 
 **Note:** `udf_teardown` is only executed if none of the `udf_chunked` calls has resulted in an error.
 
-If you'd like to make some data available that you have prepared e.g. in `udf_setup`, you can use a global variable
-and the [special assignment operator](https://cran.r-project.org/doc/manuals/R-intro.html#Scope) `<<-` to assign to variables in the outer environments:
+If you'd like to make some data available to `udf` or `udf_chunked` that you have prepared e.g. in `udf_setup`, you can use a global variable
+and the [special assignment operator](https://cran.r-project.org/doc/manuals/R-intro.html#Scope) `<<-` to assign to variables in the outer environments (e.g. load a trained model object from an URL in `udf_setup` and have it available for prediction in `udf_chunked`):
 
 **Example:**
 
