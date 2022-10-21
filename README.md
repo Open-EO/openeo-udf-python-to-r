@@ -184,6 +184,9 @@ These functions must be named `udf_setup` and `udf_teardown` and be placed in th
 `udf_setup` could be useful to initially load some data, e.g. a machine learning (ML) model.
 `udf_teardown` could be used to clean-up stuff that has been opened in `udf_setup`.
 
+**Note:** `udf_setup` and `udf_teardown` are only available if you implement `udf_chunked`.
+If you implement `udf`, the two additional functions are not available as you can execute them directly in the `udf` function, which is only executed once (for each worker).
+
 Both functions receive a single parameter, which is the `context` parameter explained above.
 Here the context parameter could contain the path to a ML model file, for example.
 By using the context parameter, you can avoid hard-coding information, which helps to make UDFs reusable.
@@ -211,7 +214,8 @@ and the [special assignment operator](https://cran.r-project.org/doc/manuals/R-i
 
 **Example:**
 
-This loads a trained model object from an URL in `udf_setup` and makes it available for prediction in `udf_chunked`.
+This loads a trained ML model object from an URL in `udf_setup` and makes it available for prediction in `udf_chunked`.
+This is important as loading the ML model in udf_chunked may download the model very often, usually thousands of times and as such the computation gets very slow.
 
 ```r
 model <- NULL
