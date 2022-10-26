@@ -127,7 +127,8 @@ The vectorized variant is usually the more efficient variant as it's executed on
 
 The UDF function must be named `udf` and receives two parameters:
 
-- `data` is a list of lists of values that you can run vectorized functions on a per pixel basis, e.g. `pmax`.
+- `data` is a matrix. Each row contains the values for a "pixel" and the columns are the values along the given dimension.
+  So if you reduce along the temporal dimension, the columns are the individual timestamps.
 - `context` -> see the description of `context` for `apply`.
 
 The UDF must return a list of values.

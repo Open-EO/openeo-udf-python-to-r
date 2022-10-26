@@ -48,7 +48,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
       if (process == 'reduce_dimension') {
         dc = st_apply(dc, margin, prepare)
       }
-      else {
+      else { # apply_dimension
         # apply the function and keep the labels. aperm restores the old dimension order.
         dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dimensions)
         new_length = dim(dc)[dimension]
@@ -63,16 +63,26 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     }
     else {
       prepare = function(x1, x2, ...) {
-        data = append(list(x1, x2), list(...))
-        names(data) = dim_labels
+        d = dim(x1)
+        l = lapply(append(list(x1, x2), list(...)), structure, dim = NULL)
+        data = do.call(cbind, l)
+
+        colnames(data) = dim_labels
+        
         result = udf(data, context)
-        return(result)
+        if (process == 'reduce_dimension') {
+            dim(result) = d
+        }
+        else { # apply_dimension
+            dim(result) = c(nrow(result), d)
+        }
+        return (result)
       }
       if (process == 'reduce_dimension') {
-        dc = st_apply(dc, margin, prepare)
+        dc = st_apply(dc, margin, prepare, single_arg = FALSE)
       }
-      else {
-        dc = st_apply(dc, margin, prepare, keep = TRUE) |> aperm(dimensions)
+      else { # apply_dimension
+        dc = st_apply(dc, margin, prepare, single_arg = FALSE, keep = TRUE) |> aperm(dimensions)
       }
     }
   }
