@@ -18,9 +18,10 @@ The following image shows how the implementation roughly works:
 
 ## Install from pypi
 
-*This is for back-end developers or end-users that want to test their UDFs locally*
+*This is for back-end developers or end-users who want to test their UDFs locally*
 
 You can install this library from pypi:
+
 `pip install openeo-r-udf`
 
 The following variables should be defined:
@@ -71,7 +72,7 @@ results = Parallel(n_jobs=num_jobs, verbose=51)(joblibDelayed(compute_udf)(data)
 result = combine_cubes(results)
 ```
 
-The `result` variable holds the processed data as an xarray.DataArray again.
+The `result` variable holds the processed data as an `xarray.DataArray` again.
 
 ## Writing a UDF
 
@@ -118,8 +119,9 @@ Please see below for more details.
 A UDF that is executed inside the process `reduce_dimension` takes all values along a dimension and computes a single value for it.
 This could for example compute an average for a timeseries.
 
-There are two different variants of UDFs that can be used as reducers for `reduce_dimension`.
-A reducer can be executed either "vectorized" or "per chunk".
+There are two different forms of UDFs that can be used as reducers
+for `reduce_dimension`: a reducer can be executed either "vectorized"
+or "per chunk".
 
 #### vectorized
 
@@ -149,7 +151,7 @@ The input data may look like this if you reduce along a band dimension with thre
 
 - `data` could be `list(r = c(1, 2, 6), g = c(3, 4, 5), b = c(7, 1, 0))`
 - `names(data)` would be `c("r", "g", "b")`
-- Exeucting the example above would return `c(7, 4, 6)`
+- Executing the example above would return `c(7, 4, 6)`
 
 #### per chunk
 
