@@ -238,3 +238,12 @@ tbd
 
 ### R4openEO use cases
 https://github.com/Open-EO/r4openeo-usecases 
+
+
+## Development
+
+Clone this repository and switch into the corresponding folder.
+
+1. Install environment via conda: `conda env create -f environment.yml`
+2. Install package for development: `pip install -e .`
+3. Now you can run one of the tests for example: `python3 tests/test.py`
