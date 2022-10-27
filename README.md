@@ -20,7 +20,11 @@ The following image shows how the implementation roughly works:
 
 *This is for back-end developers or end-users who want to test their UDFs locally*
 
-You can install this library from pypi:
+You may want to install all dependencies as a new conda environment first:
+
+`conda env create -f environment.yml`
+
+You can install this library from pypi then:
 
 `pip install openeo-r-udf`
 
