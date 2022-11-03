@@ -238,12 +238,15 @@ udf_chunked = function(data, context) {
 
 ## Examples
 ### Dockerimage for running on a backend
+Here's an example of an Dockerimage that is used to run the R-UDF service on an openEO platform backend.
 https://github.com/Open-EO/r4openeo-usecases/tree/main/vito-docker
 
 ### Implementation at Eurac
-tbd
+Here is an example how the R-UDF service is integrated in the Eurac openEO backend based on Open Data Cube.
+https://github.com/SARScripts/openeo_odc_driver/blob/f34cd35107e4fb137fc1d23cae246ed362517c75/openeo_odc_driver.py#L289
 
 ### R4openEO use cases
+Here are use cases that use the R-UDF service.
 https://github.com/Open-EO/r4openeo-usecases 
 
 
