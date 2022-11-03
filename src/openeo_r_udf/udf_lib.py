@@ -1,18 +1,14 @@
 import xarray as xr
 import numpy as np
 import rpy2.robjects as robjects
-from rpy2.robjects import numpy2ri
 import requests
 import json
 import os
 import pkg_resources
 from typing import Any, Optional
 
-numpy2ri.activate()
-
 def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None):
     rFunc = compile_udf_executor()
-
     # Prepare data cube metadata
     input_dims = list(data.dims)
     output_dims = list(data.dims)
@@ -27,6 +23,8 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
     kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': None,  'labels': list()}
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
+        from rpy2.robjects import numpy2ri
+        numpy2ri.activate()
         if dimension is None and context is None:
             vector = rFunc(data, dimensions, labels, file, process)
         if context is None:
@@ -52,12 +50,22 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
             kwargs = kwargs_default.copy()
             kwargs['dimensions'] = json.dumps(dimensions)
             kwargs['labels'] = get_labels(data)
-            new_data = xr.apply_ufunc(
-                call_r, data, kwargs = kwargs,
-                input_core_dims = [input_dims], output_core_dims = [output_dims],
-                vectorize = True,
-                exclude_dims=exclude_dims
-            )
+            if data.chunks is not None: # Dask-based Data Array
+                new_data = xr.apply_ufunc(
+                    call_r, data, kwargs = kwargs,
+                    input_core_dims = [input_dims], output_core_dims = [output_dims],
+                    exclude_dims=exclude_dims,
+                    dask='parallelized',
+                    output_dtypes=[data.dtype],
+                    dask_gufunc_kwargs={'allow_rechunk':True}
+                )
+            else: # normal DataArray
+                new_data = xr.apply_ufunc(
+                    call_r, data, kwargs = kwargs,
+                    input_core_dims = [input_dims], output_core_dims = [output_dims],
+                    vectorize = True,
+                    exclude_dims=exclude_dims
+                )
             # Reassign the coords after they have been removed for apply_dimensions through the exclude_dims argument
             if process == 'apply_dimension':
                 new_length = new_data.sizes[dimension]
