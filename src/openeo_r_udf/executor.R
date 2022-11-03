@@ -21,7 +21,7 @@ main = function(data, dimensions, labels, file, process, dimension = NULL, conte
     else if (type == "temporal") {
       dc = st_set_dimensions(dc, name, values = lubridate::as_datetime(values))
     }
-    else {
+    else { # other or bands
       dc = st_set_dimensions(dc, name, values = values)
     }
     if (!is.null(dimension) && name == dimension) {

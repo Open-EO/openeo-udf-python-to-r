@@ -5,9 +5,23 @@ import requests
 import json
 import os
 import pkg_resources
-from typing import Any, Optional
+from typing import Any, List, Optional
 
-def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None):
+TEMPORAL_DIMENSIONS = ['date', 'datetime', 'temporal', 't', 'time']
+SPATIAL_DIMENSIONS = ['lat', 'latitude', 'lon', 'long', 'longitude', 'x', 'y', 'z']
+
+def execute_udf(
+    process: str, # The name of the process (apply, apply_dimension, reduce_dimension)
+    udf_path: str, # The path to the R UDF file
+    data: xr.DataArray, # The data
+    dimension: Optional[str] = None, # The dimension name (for apply_dimension and reduce_dimension only)
+    context: Any = None, # The additional context
+    spatial_dims: List[str] = SPATIAL_DIMENSIONS, # The names of the spatial dimensions
+    temporal_dims: List[str] = TEMPORAL_DIMENSIONS): # The names of the temporal dimensions
+
+    spatial_dims = [d.lower() for d in spatial_dims]
+    temporal_dims = [d.lower() for d in temporal_dims]
+
     rFunc = compile_udf_executor()
     # Prepare data cube metadata
     input_dims = list(data.dims)
@@ -20,7 +34,14 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
         # Allow the dimension to change the size
         exclude_dims.add(dimension)
     
-    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': None,  'labels': list()}
+    kwargs_default = {
+        'process': process,
+        'dimension': dimension,
+        'context': json.dumps(context),
+        'file': udf_path,
+        'dimensions': None,
+        'labels': list()
+    }
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
         from rpy2.robjects import numpy2ri
@@ -39,13 +60,14 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
         def runnable(data): 
             dimensions = dict()
             for dim in list(data.dims):
+                d = dim.lower()
                 datatype = str(data.coords[dim].data.dtype)
-                if datatype.startswith('datetime64') or dim == 't' or dim == 'time' or dim == 'temporal':
+                if datatype.startswith('datetime64') or d in temporal_dims:
                     dimensions[dim] = 'temporal'
-                elif dim == 'x' or dim == 'y' or dim == 'lat' or dim == 'lon':
+                elif d in spatial_dims:
                     dimensions[dim] = 'spatial'
                 else:
-                    dimensions[dim] = 'other'
+                    dimensions[dim] = 'other' # or bands
 
             kwargs = kwargs_default.copy()
             kwargs['dimensions'] = json.dumps(dimensions)
