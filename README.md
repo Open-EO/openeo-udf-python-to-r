@@ -16,9 +16,12 @@ This repository contains the following content:
 The following image shows how the implementation roughly works:
 ![Workflow](docs/workflow.png)
 
-## Install from pypi
+## UDF integration
 
-*This is for back-end developers or end-users who want to test their UDFs locally*
+This section is for back-end developers who want to add R UDF capabilities to their back-end 
+or for end-users who want to test their UDFs locally.
+
+### Install from pypi
 
 You may want to install all dependencies as a new conda environment first:
 
@@ -28,6 +31,10 @@ You can install this library from pypi then:
 
 `pip install openeo-r-udf`
 
+### Run UDFs
+
+In the folloowing chapter we'll give examples on how to use the UDF library from a Python environment.
+
 The following variables should be defined:
 - `udf` (string - The content of the parameter `udf` from `run_udf`, i.e. UDF code or a path/URL to a UDF)
 - `udf_folder` (string - The folder where the UDFs reside or should be written to)
@@ -36,7 +43,9 @@ The following variables should be defined:
 - `dimension` (string, defaults to `None` - The dimension to work on if applicable, doesn't apply for `apply`)
 - `context` (Any, defaults to `None` - The data that has been passed in the `context` parameter)
 
-Use it from Python **without** parallelization:
+### Without Parallelization *or* With Parallelization through Dask
+
+If your back-end parallelizes already, you can directly run the following code:
 
 ```python
 # import the UDF library
@@ -51,7 +60,12 @@ udf_path = prepare_udf(udf, udf_folder)
 result = execute_udf(process, udf_path, data, dimension=dimension, context=context)
 ```
 
-Use it from Python **with** parallelization:
+If you parallelize with Dask, the xarray.DataArray must consist of Dask arrays, i.e. the `chunks` attribute of the DataArray MUST NOT be `None`.
+
+### With Parallelization through joblib
+
+If your back-end is not parallelizing at all, you can run the following:
+
 ```python
 # import the UDF library - make sure to install joblib before
 from openeo_r_udf.udf_lib import prepare_udf, execute_udf, chunk_cube, combine_cubes
