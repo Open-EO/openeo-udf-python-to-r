@@ -9,7 +9,6 @@ from typing import Any, Optional
 
 def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None):
     rFunc = compile_udf_executor()
-    is_dask = True if data.chunks is not None else False
     # Prepare data cube metadata
     input_dims = list(data.dims)
     output_dims = list(data.dims)
@@ -41,7 +40,7 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
             kwargs = kwargs_default.copy()
             kwargs['dimensions'] = list(data.dims)
             kwargs['labels'] = get_labels(data)
-            if is_dask:
+            if data.chunks is not None: # Dask-based Data Array
                 new_data = xr.apply_ufunc(
                     call_r, data, kwargs = kwargs,
                     input_core_dims = [input_dims], output_core_dims = [output_dims],
@@ -50,7 +49,7 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
                     output_dtypes=[data.dtype],
                     dask_gufunc_kwargs={'allow_rechunk':True}
                 )
-            else:
+            else: # normal DataArray
                 new_data = xr.apply_ufunc(
                     call_r, data, kwargs = kwargs,
                     input_core_dims = [input_dims], output_core_dims = [output_dims],
