@@ -43,6 +43,9 @@ The following variables should be defined:
 - `dimension` (string, defaults to `None` - The dimension to work on if applicable, doesn't apply for `apply`)
 - `context` (Any, defaults to `None` - The data that has been passed in the `context` parameter)
 
+Additionally, if your back-end keeps track of it, you can pass `spatial_dims` and `temporal_dims` to `execute_udf`
+where each is a list of dimension names (as strings) for the corresponding dimension types spatial (x,y,z) and temporal.
+
 ### Without Parallelization *or* With Parallelization through Dask
 
 If your back-end parallelizes already, you can directly run the following code:
