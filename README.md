@@ -33,7 +33,7 @@ You can install this library from pypi then:
 
 ### Run UDFs
 
-In the folloowing chapter we'll give examples on how to use the UDF library from a Python environment.
+In the following chapter we'll give examples on how to use the UDF library from a Python environment.
 
 The following variables should be defined:
 - `udf` (string - The content of the parameter `udf` from `run_udf`, i.e. UDF code or a path/URL to a UDF)
@@ -158,20 +158,18 @@ The UDF must return a list of values.
 
 **Example:**
 
-Please note that you may need to use `do.call` to execute functions in a vectorized way. We also need to use `pmax` for this, instead of `max`.
-
 ```r
 udf = function(data, context) {
   # To get the labels for the values once:
-  # labels = names(data)
-  do.call(pmax, data) * context
+  # labels = colnames(data)
+  apply(data, 1, max) * context
 }
 ```
 
 The input data may look like this if you reduce along a band dimension with three bands `r`, `g` and `b`:
 
-- `data` could be `list(r = c(1, 2, 6), g = c(3, 4, 5), b = c(7, 1, 0))`
-- `names(data)` would be `c("r", "g", "b")`
+- `data` could be `matrix(c(1,2,6,3,4,5,7,1,0), nrow = 3, dimnames = list(NULL, c("r","g","b")))`
+- `colnames(data)` would be `c("r", "g", "b")`
 - Executing the example above would return `c(7, 4, 6)`
 
 #### per chunk
@@ -199,7 +197,7 @@ The input data may look like this if you reduce along a band dimension with thre
 
 - `data` could be `c(1, 2, 3)`
 - `names(data)` would be `c("r", "g", "b")`
-- Exeucting the example above would return `3`
+- Executing the example above would return `3`
 
 ##### Setup and Teardown
 
