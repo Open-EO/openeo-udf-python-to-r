@@ -2,7 +2,7 @@
 
 This is an experimental engine for openEO to run R UDFs from an R environment.
 
-This currently is limited to R UDFs that are running without any other processes in the following processes:
+This implementation is currently limited to R UDFs that are running without any other processes in the following processes:
 - `apply`
 - `apply_dimension`
 - `reduce_dimension`
@@ -113,7 +113,7 @@ The UDF function must be named `udf` and receives two parameters:
 - `context` passes through the data that has been passed to the `context` parameter of the parent process (here: `apply`). If nothing has been provided explicitly, the parameter is set to `NULL`.
   
   This can be used to pass through configurable options, parameters or some additional data.
-  For example, if you would execute `apply(process = run_udf(...), context = list(m = -1, max = -100))` then you could access the corresponding values in the UDF below as `context$m` and `context$max` (see example below).
+  For example, if you would execute `apply(process = run_udf(...), context = list(min = -1, max = -100))` then you could access the corresponding values in the UDF below as `context$min` and `context$max` (see example below).
 
 The UDF must return a stars object with exactly the same shape.
 
@@ -121,7 +121,7 @@ The UDF must return a stars object with exactly the same shape.
 
 ```r
 udf = function(x, context) {
-  max(abs(x) * context$a, context$max)
+  min(max(x, context$min), context$max) 
 }
 ```
 
@@ -151,7 +151,7 @@ The vectorized variant is usually the more efficient variant as it's executed on
 The UDF function must be named `udf` and receives two parameters:
 
 - `data` is a matrix. Each row contains the values for a "pixel" and the columns are the values along the given dimension.
-  So if you reduce along the temporal dimension, the columns are the individual timestamps.
+  So, if you reduce along the temporal dimension, the columns are the individual timestamps.
 - `context` -> see the description of `context` for `apply`.
 
 The UDF must return a list of values.
@@ -174,7 +174,7 @@ The input data may look like this if you reduce along a band dimension with thre
 
 #### per chunk
 
-This variant is usually slower, but might be required for certain use cases. It is executed multiple times on the smallest chunk possible for the dimension given, e.g. a single time series.
+This variant is usually slower, but might be required for certain use cases. It is executed multiple times on the smallest chunk possible for the dimension given, e.g., a single time series.
 
 The UDF function must be named `udf_chunked` and receives two parameters:
 
@@ -211,7 +211,7 @@ If you implement `udf`, the two additional functions are not available as you ca
 
 Both functions receive a single parameter, which is the `context` parameter explained above.
 Here the context parameter could contain the path to a ML model file, for example.
-By using the context parameter, you can avoid hard-coding information, which helps to make UDFs reusable.
+By using the context parameter, you can avoid hard-coding information, which helps to make UDFs more reusable.
 
 **Example:**
 
@@ -229,7 +229,7 @@ udf_teardown = function(context) {
 }
 ```
 
-**Note:** `udf_teardown` is only executed if none of the `udf_chunked` calls has resulted in an error.
+**Note:** `udf_teardown` is only executed if none of the `udf_chunked` calls have resulted in an error.
 
 If you'd like to make some data available in `udf_chunked` and/or `udf_teardown` that you have prepared in `udf_setup` (or `udf_chunked`), you can use a global variable
 and the [special assignment operator](https://cran.r-project.org/doc/manuals/R-intro.html#Scope) `<<-` to assign to variables in the outer environments.
@@ -253,16 +253,16 @@ udf_chunked = function(data, context) {
 
 ## Examples
 ### Dockerimage for running on a backend
-Here's an example of an Dockerimage that is used to run the R-UDF service on an openEO platform backend.
-https://github.com/Open-EO/r4openeo-usecases/tree/main/vito-docker
+Here's an example of an Dockerimage that is used to run the R-UDF service on an openEO platform backend:
+<https://github.com/Open-EO/r4openeo-usecases/tree/main/vito-docker>
 
 ### Implementation at Eurac
-Here is an example how the R-UDF service is integrated in the Eurac openEO backend based on Open Data Cube.
-https://github.com/SARScripts/openeo_odc_driver/blob/f34cd35107e4fb137fc1d23cae246ed362517c75/openeo_odc_driver.py#L289
+Here is an example how the R-UDF service is integrated in the Eurac openEO backend based on Open Data Cube:
+<https://github.com/SARScripts/openeo_odc_driver/blob/f34cd35107e4fb137fc1d23cae246ed362517c75/openeo_odc_driver.py#L289>
 
 ### R4openEO use cases
-Here are use cases that use the R-UDF service.
-https://github.com/Open-EO/r4openeo-usecases 
+Here are use cases that use the R-UDF service:
+<https://github.com/Open-EO/r4openeo-usecases>
 
 
 ## Development
