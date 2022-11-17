@@ -1,18 +1,28 @@
 import xarray as xr
 import numpy as np
 import rpy2.robjects as robjects
-from rpy2.robjects import numpy2ri
 import requests
 import json
 import os
 import pkg_resources
-from typing import Any, Optional
+from typing import Any, List, Optional
 
-numpy2ri.activate()
+TEMPORAL_DIMENSIONS = ['date', 'datetime', 'temporal', 't', 'time']
+SPATIAL_DIMENSIONS = ['lat', 'latitude', 'lon', 'long', 'longitude', 'x', 'y', 'z']
 
-def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Optional[str] = None, context: Any = None):
+def execute_udf(
+    process: str, # The name of the process (apply, apply_dimension, reduce_dimension)
+    udf_path: str, # The path to the R UDF file
+    data: xr.DataArray, # The data
+    dimension: Optional[str] = None, # The dimension name (for apply_dimension and reduce_dimension only)
+    context: Any = None, # The additional context
+    spatial_dims: List[str] = SPATIAL_DIMENSIONS, # The names of the spatial dimensions
+    temporal_dims: List[str] = TEMPORAL_DIMENSIONS): # The names of the temporal dimensions
+
+    spatial_dims = [d.lower() for d in spatial_dims]
+    temporal_dims = [d.lower() for d in temporal_dims]
+
     rFunc = compile_udf_executor()
-
     # Prepare data cube metadata
     input_dims = list(data.dims)
     output_dims = list(data.dims)
@@ -24,9 +34,18 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
         # Allow the dimension to change the size
         exclude_dims.add(dimension)
     
-    kwargs_default = {'process': process, 'dimension': dimension, 'context': json.dumps(context), 'file': udf_path, 'dimensions': list(),  'labels': list()}
+    kwargs_default = {
+        'process': process,
+        'dimension': dimension,
+        'context': json.dumps(context),
+        'file': udf_path,
+        'dimensions': None,
+        'labels': list()
+    }
 
     def call_r(data, dimensions, labels, file, process, dimension, context):
+        from rpy2.robjects import numpy2ri
+        numpy2ri.activate()
         if dimension is None and context is None:
             result = rFunc(data, dimensions, labels, file, process)
         if context is None:
@@ -40,15 +59,36 @@ def execute_udf(process: str, udf_path: str, data: xr.DataArray, dimension: Opti
 
     if process == 'apply' or process == 'apply_dimension' or process == 'reduce_dimension':
         def runnable(data): 
+            dimensions = dict()
+            for dim in list(data.dims):
+                d = dim.lower()
+                datatype = str(data.coords[dim].data.dtype)
+                if datatype.startswith('datetime64') or d in temporal_dims:
+                    dimensions[dim] = 'temporal'
+                elif d in spatial_dims:
+                    dimensions[dim] = 'spatial'
+                else:
+                    dimensions[dim] = 'other' # or bands
+
             kwargs = kwargs_default.copy()
-            kwargs['dimensions'] = list(data.dims)
+            kwargs['dimensions'] = json.dumps(dimensions)
             kwargs['labels'] = get_labels(data)
-            new_data = xr.apply_ufunc(
-                call_r, data, kwargs = kwargs,
-                input_core_dims = [input_dims], output_core_dims = [output_dims],
-                vectorize = True,
-                exclude_dims=exclude_dims
-            )
+            if data.chunks is not None: # Dask-based Data Array
+                new_data = xr.apply_ufunc(
+                    call_r, data, kwargs = kwargs,
+                    input_core_dims = [input_dims], output_core_dims = [output_dims],
+                    exclude_dims=exclude_dims,
+                    dask='parallelized',
+                    output_dtypes=[data.dtype],
+                    dask_gufunc_kwargs={'allow_rechunk':True}
+                )
+            else: # normal DataArray
+                new_data = xr.apply_ufunc(
+                    call_r, data, kwargs = kwargs,
+                    input_core_dims = [input_dims], output_core_dims = [output_dims],
+                    vectorize = True,
+                    exclude_dims=exclude_dims
+                )
             # Reassign the coords after they have been removed for apply_dimensions through the exclude_dims argument
             if process == 'apply_dimension':
                 new_length = new_data.sizes[dimension]
