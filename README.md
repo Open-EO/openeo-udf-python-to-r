@@ -162,7 +162,9 @@ The UDF must return a list of values.
 udf = function(data, context) {
   # To get the labels for the values once:
   # labels = colnames(data)
-  apply(data, 1, max) * context
+  do.call(pmax, as.data.frame(data))
+  # You could also use apply, but this is much slower as it is not vectorized:
+  # apply(data, 1, max) * context
 }
 ```
 
